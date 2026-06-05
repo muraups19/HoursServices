@@ -231,6 +231,88 @@
     .spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
     .loading-text{color:var(--muted);font-size:14px}
 
+    /* ── CALCULADOR DE INTERVALOS ── */
+    .btn-calc-toggle{
+      background:rgba(232,166,48,.1);border:1px solid rgba(232,166,48,.3);
+      color:var(--accent);width:42px;height:42px;border-radius:9px;
+      cursor:pointer;font-size:18px;display:flex;align-items:center;
+      justify-content:center;flex-shrink:0;transition:all .2s;
+      -webkit-tap-highlight-color:transparent
+    }
+    .btn-calc-toggle:hover,.btn-calc-toggle.active{background:var(--accent);color:#0f0e0c}
+    .minutes-input-row{display:flex;gap:8px;align-items:center}
+    .minutes-input-row input{flex:1}
+
+    .calc-panel{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:10px;padding:14px;margin-top:10px;
+      animation:fadeUp .2s ease both
+    }
+    .calc-panel-header{
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:11px;font-weight:600;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px
+    }
+    .calc-panel-close{
+      background:none;border:none;color:var(--muted);font-size:16px;
+      cursor:pointer;padding:2px 6px;border-radius:6px;
+      transition:color .15s;-webkit-tap-highlight-color:transparent
+    }
+    .calc-panel-close:hover{color:var(--danger)}
+
+    .calc-interval-row{
+      display:grid;grid-template-columns:1fr 1fr auto;
+      gap:8px;align-items:flex-end;margin-bottom:8px
+    }
+    .calc-interval-row .cif label{
+      display:block;font-size:10px;font-weight:600;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px
+    }
+    .calc-interval-row .cif input{
+      width:100%;background:var(--card);border:1px solid var(--border);
+      color:var(--text);padding:9px 11px;border-radius:8px;
+      font-family:'DM Sans',sans-serif;font-size:15px;outline:none;
+      transition:border-color .2s;-webkit-appearance:none
+    }
+    .calc-interval-row .cif input:focus{border-color:var(--accent)}
+    .btn-rem-interval{
+      background:none;border:1px solid var(--border);color:var(--muted);
+      width:34px;height:34px;border-radius:7px;cursor:pointer;
+      font-size:14px;display:flex;align-items:center;justify-content:center;
+      transition:all .15s;align-self:flex-end;flex-shrink:0;
+      -webkit-tap-highlight-color:transparent
+    }
+    .btn-rem-interval:hover{border-color:var(--danger);color:var(--danger)}
+    .btn-rem-interval:disabled{opacity:.3;cursor:default;pointer-events:none}
+
+    .btn-add-interval{
+      background:none;border:1px dashed var(--border);color:var(--muted);
+      padding:7px 12px;border-radius:8px;cursor:pointer;
+      font-size:12px;font-family:'DM Sans',sans-serif;
+      transition:all .15s;display:inline-flex;align-items:center;gap:5px;
+      margin-top:4px;-webkit-tap-highlight-color:transparent
+    }
+    .btn-add-interval:hover{border-color:var(--accent);color:var(--accent)}
+
+    .calc-intervals-result{
+      background:rgba(91,191,122,.08);border:1px solid rgba(91,191,122,.2);
+      border-radius:8px;padding:10px 12px;margin-top:12px;
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:8px
+    }
+    .calc-res-items{display:flex;gap:14px;flex-wrap:wrap}
+    .calc-res-items>div{display:flex;flex-direction:column;gap:2px}
+    .calc-res-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .calc-res-val{font-size:14px;font-weight:600;color:var(--success)}
+    .btn-apply-mins{
+      background:var(--accent);color:#0f0e0c;border:none;
+      padding:8px 13px;border-radius:8px;font-size:13px;font-weight:700;
+      cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;
+      white-space:nowrap;-webkit-tap-highlight-color:transparent
+    }
+    .btn-apply-mins:hover{background:var(--accent2)}
+    .calc-err{font-size:11px;color:var(--danger);margin-top:4px;min-height:16px}
+
     @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
     @keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
     @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
@@ -377,10 +459,42 @@
         </div>
 
         <div class="form-row">
+          <!-- CAMPO MINUTOS COM BOTÃO CALCULADOR -->
           <div class="field">
             <label>Minutos *</label>
-            <input type="number" id="f-minutes" step="1" min="1" placeholder="Ex: 238" inputmode="numeric" oninput="updateCalc()"/>
+            <div class="minutes-input-row">
+              <input type="number" id="f-minutes" step="1" min="1" placeholder="Ex: 238" inputmode="numeric" oninput="updateCalc()"/>
+              <button type="button" class="btn-calc-toggle" id="btn-calc-toggle" onclick="toggleCalcPanel()" title="Calcular por horários de entrada e saída">⏱</button>
+            </div>
+            <!-- PAINEL DO CALCULADOR DE INTERVALOS -->
+            <div id="calc-panel" class="calc-panel" style="display:none">
+              <div class="calc-panel-header">
+                <span>Calcular por apontamentos</span>
+                <button type="button" class="calc-panel-close" onclick="toggleCalcPanel()">✕</button>
+              </div>
+              <div id="calc-intervals-container"></div>
+              <button type="button" class="btn-add-interval" onclick="addCalcInterval()">＋ Adicionar intervalo</button>
+              <div id="calc-err" class="calc-err"></div>
+              <div id="calc-intervals-result" class="calc-intervals-result" style="display:none">
+                <div class="calc-res-items">
+                  <div>
+                    <span class="calc-res-lbl">Apontamentos</span>
+                    <span class="calc-res-val" id="calc-res-count">—</span>
+                  </div>
+                  <div>
+                    <span class="calc-res-lbl">Total</span>
+                    <span class="calc-res-val" id="calc-res-mins">—</span>
+                  </div>
+                  <div>
+                    <span class="calc-res-lbl">Equivale a</span>
+                    <span class="calc-res-val" id="calc-res-hrs">—</span>
+                  </div>
+                </div>
+                <button type="button" class="btn-apply-mins" onclick="applyCalcMins()">✓ Usar esses minutos</button>
+              </div>
+            </div>
           </div>
+
           <div class="field">
             <label>Valor por Minuto (R$) *</label>
             <input type="number" id="f-rate" step="0.0001" min="0" placeholder="Ex: 0.70" inputmode="decimal" oninput="updateCalc()"/>
@@ -533,6 +647,130 @@ let deletingId        = null;
 let deletingMUId      = null;
 let closingPeriodId   = null;
 
+// ── CALCULADOR DE INTERVALOS ──
+let calcIntervals = [{id:1, start:'', end:''}];
+let calcNextId    = 2;
+
+function toggleCalcPanel(){
+  const panel = document.getElementById('calc-panel');
+  const btn   = document.getElementById('btn-calc-toggle');
+  const open  = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  btn.classList.toggle('active', open);
+  if(open) renderCalcIntervals();
+}
+
+function addCalcInterval(){
+  calcIntervals.push({id: calcNextId++, start:'', end:''});
+  renderCalcIntervals();
+}
+
+function removeCalcInterval(id){
+  if(calcIntervals.length === 1) return;
+  calcIntervals = calcIntervals.filter(i => i.id !== id);
+  renderCalcIntervals();
+}
+
+function parseCalcTime(s){
+  if(!s) return null;
+  const m = s.match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return null;
+  const h = parseInt(m[1]), min = parseInt(m[2]);
+  if(h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+
+function recalcIntervals(){
+  document.getElementById('calc-err').textContent = '';
+  let total = 0, valid = 0, hasErr = false;
+
+  for(const iv of calcIntervals){
+    if(!iv.start && !iv.end) continue;
+    const s = parseCalcTime(iv.start);
+    const e = parseCalcTime(iv.end);
+    if(s === null || e === null){ hasErr = true; continue; }
+    const diff = e - s;
+    if(diff <= 0){
+      hasErr = true;
+      document.getElementById('calc-err').textContent = '⚠️ Hora final deve ser após a inicial';
+      continue;
+    }
+    total += diff;
+    valid++;
+  }
+
+  const resEl = document.getElementById('calc-intervals-result');
+  if(valid > 0){
+    resEl.style.display = 'flex';
+    const h = Math.floor(total / 60), mn = total % 60;
+    document.getElementById('calc-res-count').textContent = valid + (valid === 1 ? ' apontamento' : ' apontamentos');
+    document.getElementById('calc-res-mins').textContent  = total + ' min';
+    document.getElementById('calc-res-hrs').textContent   = (h > 0 ? h + 'h ' : '') + (mn > 0 ? mn + 'm' : (h > 0 ? '' : '0m'));
+  } else {
+    resEl.style.display = 'none';
+  }
+}
+
+function applyCalcMins(){
+  let total = 0;
+  for(const iv of calcIntervals){
+    const s = parseCalcTime(iv.start);
+    const e = parseCalcTime(iv.end);
+    if(s !== null && e !== null && e > s) total += e - s;
+  }
+  if(total > 0){
+    document.getElementById('f-minutes').value = total;
+    updateCalc();
+    // fecha painel
+    const panel = document.getElementById('calc-panel');
+    const btn   = document.getElementById('btn-calc-toggle');
+    panel.style.display = 'none';
+    btn.classList.remove('active');
+    // flash verde no campo
+    const mf = document.getElementById('f-minutes');
+    mf.style.borderColor = 'var(--success)';
+    setTimeout(() => { mf.style.borderColor = ''; }, 1500);
+    showToast(total + ' minutos aplicados!', 'success');
+    // reseta para próximo uso
+    calcIntervals = [{id:1, start:'', end:''}];
+    calcNextId = 2;
+  }
+}
+
+function renderCalcIntervals(){
+  const c = document.getElementById('calc-intervals-container');
+  c.innerHTML = calcIntervals.map((iv, idx) => `
+    <div class="calc-interval-row">
+      <div class="cif">
+        <label>Início</label>
+        <input type="time" value="${iv.start}"
+          oninput="calcIntervals.find(x=>x.id===${iv.id}).start=this.value; recalcIntervals()"
+          placeholder="13:00"/>
+      </div>
+      <div class="cif">
+        <label>Fim</label>
+        <input type="time" value="${iv.end}"
+          oninput="calcIntervals.find(x=>x.id===${iv.id}).end=this.value; recalcIntervals()"
+          placeholder="15:30"/>
+      </div>
+      <button type="button" class="btn-rem-interval"
+        onclick="removeCalcInterval(${iv.id})"
+        ${calcIntervals.length === 1 ? 'disabled' : ''}
+        title="Remover intervalo">✕</button>
+    </div>
+  `).join('');
+  recalcIntervals();
+}
+
+function resetCalcPanel(){
+  calcIntervals = [{id:1, start:'', end:''}];
+  calcNextId = 2;
+  const panel = document.getElementById('calc-panel');
+  if(panel) panel.style.display = 'none';
+  const btn = document.getElementById('btn-calc-toggle');
+  if(btn) btn.classList.remove('active');
+}
+
 // AUTH
 async function signInGoogle() {
   const { error } = await db.auth.signInWithOAuth({
@@ -649,7 +887,7 @@ async function saveRecord(){
   const per = allPeriods.find(p=>p.id===period_id);
   if(!isAdmin && per?.status==='closed'){ showToast('Este período está fechado','error'); return; }
 
-  const total_value   = minutes * rate;
+  const total_value    = minutes * rate;
   const duration_hours = minutes / 60;
 
   let user_id = currentUser.id;
@@ -1038,6 +1276,7 @@ function clearForm(){
   document.getElementById('cf-total').textContent='—';
   document.getElementById('cf-dur').textContent='Preencha os campos acima';
   document.getElementById('period-closed-warn').style.display='none';
+  resetCalcPanel();
 }
 
 function populatePeriodDropdown(){
