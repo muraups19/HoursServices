@@ -304,6 +304,8 @@
     .calc-res-items>div{display:flex;flex-direction:column;gap:2px}
     .calc-res-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
     .calc-res-val{font-size:14px;font-weight:600;color:var(--success)}
+    /* Desconto de almoço — destaque em laranja */
+    .calc-res-val.lunch-deduct{color:var(--accent)}
     .btn-apply-mins{
       background:var(--accent);color:#0f0e0c;border:none;
       padding:8px 13px;border-radius:8px;font-size:13px;font-weight:700;
@@ -482,6 +484,14 @@
                     <span class="calc-res-val" id="calc-res-count">—</span>
                   </div>
                   <div>
+                    <span class="calc-res-lbl">Bruto</span>
+                    <span class="calc-res-val" id="calc-res-gross">—</span>
+                  </div>
+                  <div id="calc-res-lunch-wrap" style="display:none">
+                    <span class="calc-res-lbl">Almoço</span>
+                    <span class="calc-res-val lunch-deduct" id="calc-res-lunch">—</span>
+                  </div>
+                  <div>
                     <span class="calc-res-lbl">Total</span>
                     <span class="calc-res-val" id="calc-res-mins">—</span>
                   </div>
@@ -629,7 +639,6 @@
 <script>
 const SUPABASE_URL  = 'https://taryfomwucrqonhlnncl.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcnlmb213dWNycW9uaGxubmNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4Mjk0MjAsImV4cCI6MjA5NTQwNTQyMH0.-wXeA53ZcBaMA8zqsAxA2JWvzoTn-lazyWdEkuLnXc0';
-// Para admin: UPDATE profiles SET role='admin' WHERE id='UUID';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -650,6 +659,27 @@ let closingPeriodId   = null;
 // ── CALCULADOR DE INTERVALOS ──
 let calcIntervals = [{id:1, start:'', end:''}];
 let calcNextId    = 2;
+
+// Horário de almoço em minutos desde meia-noite
+const LUNCH_START = 12 * 60; // 720 min = 12:00
+const LUNCH_END   = 13 * 60; // 780 min = 13:00
+const LUNCH_DURATION = LUNCH_END - LUNCH_START; // 60 min
+
+/**
+ * Calcula quanto do intervalo de almoço (12:00–13:00) está contido
+ * dentro do intervalo [s, e] (em minutos).
+ * Retorna 0 se o intervalo não cruzar o almoço, ou o número de minutos
+ * de sobreposição caso contrário.
+ * Para a regra do negócio: só desconta se a sobreposição for TOTAL (60 min),
+ * ou seja, o intervalo começa ANTES das 12:00 E termina APÓS as 13:00.
+ */
+function lunchDeductionForInterval(s, e) {
+  // O intervalo cobre completamente o horário de almoço?
+  if (s < LUNCH_START && e > LUNCH_END) {
+    return LUNCH_DURATION; // desconta 60 min
+  }
+  return 0;
+}
 
 function toggleCalcPanel(){
   const panel = document.getElementById('calc-panel');
@@ -682,7 +712,10 @@ function parseCalcTime(s){
 
 function recalcIntervals(){
   document.getElementById('calc-err').textContent = '';
-  let total = 0, valid = 0, hasErr = false;
+  let grossTotal  = 0; // soma bruta sem desconto
+  let totalDeduct = 0; // total descontado de almoço
+  let valid       = 0;
+  let hasErr      = false;
 
   for(const iv of calcIntervals){
     if(!iv.start && !iv.end) continue;
@@ -695,42 +728,77 @@ function recalcIntervals(){
       document.getElementById('calc-err').textContent = '⚠️ Hora final deve ser após a inicial';
       continue;
     }
-    total += diff;
+    grossTotal  += diff;
+    totalDeduct += lunchDeductionForInterval(s, e);
     valid++;
   }
 
-  const resEl = document.getElementById('calc-intervals-result');
+  const netTotal = grossTotal - totalDeduct;
+  const resEl    = document.getElementById('calc-intervals-result');
+
   if(valid > 0){
     resEl.style.display = 'flex';
-    const h = Math.floor(total / 60), mn = total % 60;
-    document.getElementById('calc-res-count').textContent = valid + (valid === 1 ? ' apontamento' : ' apontamentos');
-    document.getElementById('calc-res-mins').textContent  = total + ' min';
-    document.getElementById('calc-res-hrs').textContent   = (h > 0 ? h + 'h ' : '') + (mn > 0 ? mn + 'm' : (h > 0 ? '' : '0m'));
+    const h  = Math.floor(netTotal / 60);
+    const mn = netTotal % 60;
+
+    document.getElementById('calc-res-count').textContent =
+      valid + (valid === 1 ? ' apontamento' : ' apontamentos');
+
+    document.getElementById('calc-res-gross').textContent = grossTotal + ' min';
+
+    // Linha do desconto de almoço — só aparece se houve desconto
+    const lunchWrap = document.getElementById('calc-res-lunch-wrap');
+    if(totalDeduct > 0){
+      lunchWrap.style.display = 'flex';
+      document.getElementById('calc-res-lunch').textContent = '−' + totalDeduct + ' min';
+    } else {
+      lunchWrap.style.display = 'none';
+    }
+
+    document.getElementById('calc-res-mins').textContent = netTotal + ' min';
+    document.getElementById('calc-res-hrs').textContent  =
+      (h > 0 ? h + 'h ' : '') + (mn > 0 ? mn + 'm' : (h > 0 ? '' : '0m'));
+
   } else {
     resEl.style.display = 'none';
   }
 }
 
 function applyCalcMins(){
-  let total = 0;
+  let grossTotal  = 0;
+  let totalDeduct = 0;
+
   for(const iv of calcIntervals){
     const s = parseCalcTime(iv.start);
     const e = parseCalcTime(iv.end);
-    if(s !== null && e !== null && e > s) total += e - s;
+    if(s !== null && e !== null && e > s){
+      grossTotal  += e - s;
+      totalDeduct += lunchDeductionForInterval(s, e);
+    }
   }
-  if(total > 0){
-    document.getElementById('f-minutes').value = total;
+
+  const netTotal = grossTotal - totalDeduct;
+
+  if(netTotal > 0){
+    document.getElementById('f-minutes').value = netTotal;
     updateCalc();
+
     // fecha painel
     const panel = document.getElementById('calc-panel');
     const btn   = document.getElementById('btn-calc-toggle');
     panel.style.display = 'none';
     btn.classList.remove('active');
+
     // flash verde no campo
     const mf = document.getElementById('f-minutes');
     mf.style.borderColor = 'var(--success)';
     setTimeout(() => { mf.style.borderColor = ''; }, 1500);
-    showToast(total + ' minutos aplicados!', 'success');
+
+    const msg = totalDeduct > 0
+      ? netTotal + ' min aplicados (−' + totalDeduct + ' min de almoço descontados)'
+      : netTotal + ' minutos aplicados!';
+    showToast(msg, 'success');
+
     // reseta para próximo uso
     calcIntervals = [{id:1, start:'', end:''}];
     calcNextId = 2;
@@ -739,7 +807,7 @@ function applyCalcMins(){
 
 function renderCalcIntervals(){
   const c = document.getElementById('calc-intervals-container');
-  c.innerHTML = calcIntervals.map((iv, idx) => `
+  c.innerHTML = calcIntervals.map((iv) => `
     <div class="calc-interval-row">
       <div class="cif">
         <label>Início</label>
@@ -883,7 +951,6 @@ async function saveRecord(){
   if(!minutes||minutes<1){ showToast('Informe os minutos (mínimo 1)','error'); return; }
   if(!rate||rate<=0)     { showToast('Informe o valor por minuto','error'); return; }
 
-  // check period is open (non-admin)
   const per = allPeriods.find(p=>p.id===period_id);
   if(!isAdmin && per?.status==='closed'){ showToast('Este período está fechado','error'); return; }
 
@@ -1188,7 +1255,6 @@ function updateStats(data, isFiltered){
   document.getElementById('stat-mins').textContent  = formatMins(mins);
   document.getElementById('stat-value').textContent = fmtCurrency(v);
 
-  // Qty KPI
   const qtySummary = isFiltered ? buildQtySummary(data) : null;
   const scQty = document.getElementById('sc-qty');
   if(isFiltered && qtySummary){
@@ -1200,7 +1266,6 @@ function updateStats(data, isFiltered){
     document.getElementById('stat-qty-sub').textContent='nos resultados';
   } else { scQty.style.display='none'; }
 
-  // filtered badges
   ['sc-total','sc-mins','sc-value'].forEach(id=>{
     const el=document.getElementById(id);
     el.classList.toggle('filtered',!!isFiltered);
@@ -1222,7 +1287,6 @@ function openAddModal(){
   editingId=null;
   document.getElementById('modal-title').textContent='Novo Registro';
   clearForm();
-  // pre-select period based on selected pill
   if(selectedPeriodId){
     const per=allPeriods.find(p=>p.id===selectedPeriodId);
     if(per){ document.getElementById('f-period').value=selectedPeriodId; updatePeriodWarning(); }
@@ -1382,11 +1446,6 @@ function formatMins(m){
   return `${mn}m`;
 }
 const fmtCurrency = v => (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:4});
-function fmtCurrencyShort(v){
-  if(v>=1000000) return 'R$'+(v/1000000).toFixed(2)+'M';
-  if(v>=1000)    return 'R$'+(v/1000).toFixed(2)+'k';
-  return fmtCurrency(v);
-}
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function hideLoading(){ document.getElementById('loading-overlay').classList.add('hidden'); }
 function showToast(msg,type='success'){
