@@ -5,530 +5,414 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <title>ServiçoHoras</title>
+  <title>ServiçoHoras - Estilo ERP</title>
   
-  <!-- Fonte alterada para Inter, mais limpa e corporativa (estilo ERP) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
     :root {
-      /* TEMA CLARO - INSPIRADO NO BLING */
-      --bg: #f4f5f7;           /* Fundo geral da página */
-      --surface: #ffffff;      /* Fundo de cabeçalhos e modais */
-      --card: #ffffff;         /* Fundo dos cartões */
-      --border: #e2e8f0;       /* Bordas sutis */
+      /* TEMA CLARO - IDÊNTICO AO BLING */
+      --bg: #f3f4f6;           /* Fundo da tela */
+      --surface: #ffffff;      /* Fundo de painéis e tabela */
+      --card: #ffffff;
+      --border: #e5e7eb;       /* Bordas sutis */
       
-      --accent: #14B774;       /* Verde Bling */
-      --accent2: #0E945D;      /* Verde Bling (Hover/Escuro) */
+      --accent: #1eb974;       /* Verde Bling Principal */
+      --accent-hover: #17965b; /* Verde Bling Hover */
       
-      --text-dark: #1e293b;    /* Títulos e textos principais */
-      --text: #334155;         /* Textos secundários */
-      --muted: #64748b;        /* Textos de apoio e ícones inativos */
+      --text-dark: #374151;    /* Títulos escuros */
+      --text: #4b5563;         /* Texto padrão */
+      --muted: #9ca3af;        /* Texto secundário e ícones */
       
-      --danger: #ef4444;       /* Vermelho de exclusão/erro */
-      --success: #14B774;      /* Verde de sucesso */
-      --info: #3b82f6;         /* Azul de informação */
+      --danger: #ef4444;       
+      --success: #1eb974;      
+      --info: #3b82f6;         
       
-      --r: 8px;                /* Bordas um pouco mais quadradas, padrão ERP */
-      --hh: 64px;              /* Altura do Header */
+      --r: 4px;                /* Bordas mais quadradas (ERP) */
+      --hh: 56px;              /* Altura do Header Bling */
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
-      --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* TEMA ESCURO (DARK MODE) */
+    body.dark-mode {
+      --bg: #111827;
+      --surface: #1f2937;
+      --card: #1f2937;
+      --border: #374151;
+      
+      --text-dark: #f9fafb;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
     }
     
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
     html { scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; min-height: 100dvh; overscroll-behavior: none }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; line-height: 1.5; min-height: 100dvh; transition: background-color 0.3s; }
     
-    .screen { display: none; min-height: 100dvh }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    body.dark-mode ::-webkit-scrollbar-thumb { background: #4b5563; }
+    
+    .screen { display: none; min-height: 100dvh; flex-direction: column; }
     .screen.active { display: flex }
 
-    /* LOGIN */
-    #screen-login { align-items: center; justify-content: center; background: #f8fafc; padding: 24px; padding-top: calc(var(--safe-top) + 24px) }
-    .login-box { text-align: center; background: var(--surface); padding: 40px 30px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); max-width: 380px; width: 100%; animation: fadeUp .5s ease both }
-    .login-logo { width: 72px; height: 72px; background: rgba(20, 183, 116, 0.1); color: var(--accent); border-radius: 16px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 1px solid rgba(20, 183, 116, 0.2); }
-    .login-box h1 { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; letter-spacing: -0.5px; }
-    .login-box p { color: var(--muted); margin-bottom: 32px; font-size: 14px; }
-    .btn-google { display: inline-flex; align-items: center; justify-content: center; gap: 12px; background: var(--card); border: 1px solid var(--border); color: var(--text-dark); padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .2s; width: 100%; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .btn-google:active { transform: scale(.98); background: #f1f5f9; }
-    @media(hover:hover){ .btn-google:hover { background: #f8fafc; border-color: #cbd5e1; } }
+    /* ================= LOGIN ================= */
+    #screen-login { align-items: center; justify-content: center; padding: 24px; }
+    .login-box { text-align: center; background: var(--surface); padding: 40px 30px; border-radius: 8px; box-shadow: var(--shadow); border: 1px solid var(--border); max-width: 380px; width: 100%; animation: fadeUp .5s ease both }
+    .login-logo { width: 64px; height: 64px; background: var(--accent); color: #fff; border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+    .login-box h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    .login-box p { color: var(--muted); margin-bottom: 32px; font-size: 13px; }
+    .btn-google { display: inline-flex; align-items: center; justify-content: center; gap: 12px; background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 10px 24px; border-radius: var(--r); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; width: 100%; }
+    .btn-google:hover { filter: brightness(0.95); }
 
-    /* APP */
-    #screen-app { flex-direction: column }
-    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; padding-top: var(--safe-top); height: calc(var(--hh) + var(--safe-top)); display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
-    .header-logo { width: 34px; height: 34px; background: var(--accent); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-    .header-title { font-size: 1.15rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.3px; flex-shrink: 0 }
-    .header-spacer { flex: 1 }
+    /* ================= HEADER BLING ================= */
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); height: var(--hh); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-logo { width: 32px; height: 32px; background: var(--accent); color: #fff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; }
+    .header-nav { display: flex; gap: 16px; margin-left: 16px; }
+    .nav-item { font-size: 13px; font-weight: 500; color: var(--text-dark); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+    .nav-item::after { content: '▾'; color: var(--muted); font-size: 10px; }
     
-    .badge-admin { background: rgba(20, 183, 116, 0.1); color: var(--accent2); border: 1px solid rgba(20, 183, 116, 0.2); border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; flex-shrink: 0 }
-    .user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); flex-shrink: 0 }
+    .header-center { flex: 1; max-width: 500px; margin: 0 24px; }
+    .header-search { position: relative; width: 100%; }
+    .header-search input { width: 100%; background: var(--bg); border: 1px solid transparent; color: var(--text-dark); padding: 8px 16px 8px 36px; border-radius: 4px; font-size: 13px; outline: none; transition: all 0.2s; }
+    .header-search input:focus { border-color: var(--accent); background: var(--surface); }
+    .header-search .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
     
-    .btn-header { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all .2s; white-space: nowrap; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .btn-header:active, .btn-header:hover { border-color: #cbd5e1; background: #f8fafc; color: var(--text-dark); }
-    .btn-header.danger { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
-    .btn-header.danger:hover { background: rgba(239, 68, 68, 0.05); border-color: var(--danger); }
-    
-    .main { flex: 1; padding: 24px 20px; padding-bottom: calc(90px + var(--safe-bot)); max-width: 1000px; margin: 0 auto; width: 100% }
-    .page-header { margin-bottom: 20px }
-    .page-header h2 { font-size: 1.6rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.5px; }
-    .page-header p { color: var(--muted); font-size: 14px; margin-top: 4px }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .header-icon-btn { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 4px; }
+    .header-icon-btn:hover { background: var(--bg); color: var(--text-dark); }
+    .badge-admin { background: rgba(30, 185, 116, 0.15); color: var(--accent); border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .user-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
 
-    /* PERIOD PILLS */
-    .periods-row { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -20px 20px; padding: 0 20px 4px; scrollbar-width: none }
-    .periods-row::-webkit-scrollbar { display: none }
-    .period-pill { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; background: var(--surface); border: 1px solid var(--border); color: var(--text); cursor: pointer; transition: all .2s; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .period-pill:active, .period-pill:hover { border-color: #cbd5e1; background: #f8fafc; }
-    .period-pill.active { background: var(--accent); border-color: var(--accent); color: #ffffff; font-weight: 600; box-shadow: 0 2px 4px rgba(20, 183, 116, 0.2); }
-    .period-pill.active .period-dot.open { background: #ffffff }
-    .period-pill.pill-add { border-style: dashed; background: transparent; box-shadow: none; }
-    .period-pill.pill-add:hover { background: rgba(20, 183, 116, 0.05); border-color: var(--accent); color: var(--accent2); }
+    /* ================= LAYOUT PRINCIPAL ================= */
+    .bling-layout { display: flex; flex-direction: row; gap: 24px; padding: 24px; max-width: 1600px; margin: 0 auto; width: 100%; align-items: flex-start; }
+    .main-content { flex: 1; min-width: 0; }
+    .sidebar-right { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
+
+    /* SUB-HEADER / BREADCRUMB */
+    .page-subheader { display: flex; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+    .breadcrumb-dots { color: var(--accent); font-weight: 700; font-size: 20px; letter-spacing: 2px; line-height: 1; margin-right: 4px; }
+    .breadcrumb-arrow { color: var(--muted); font-size: 16px; margin: 0 4px; }
+    .page-title { font-size: 1.5rem; font-weight: 600; color: var(--text-dark); display: inline-flex; align-items: center; gap: 12px; }
     
-    .period-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0 }
-    .period-dot.open { background: var(--success) }
-    .period-dot.closed { background: #94a3b8 }
+    /* Seletor Estilo Bling (Dropdown Verde) */
+    .period-dropdown-wrap { position: relative; display: inline-flex; align-items: center; margin-left: 8px; }
+    .period-dropdown-wrap select { appearance: none; background: transparent; border: none; font-size: 14px; font-weight: 600; color: var(--accent); padding-right: 16px; cursor: pointer; outline: none; font-family: 'Inter', sans-serif; }
+    .period-dropdown-wrap select option { color: var(--text-dark); background: var(--surface); }
+    .period-dropdown-wrap::after { content: '▾'; position: absolute; right: 0; top: 50%; transform: translateY(-50%); color: var(--accent); pointer-events: none; font-size: 12px; }
 
-    /* STATS */
-    .stats-scroll { display: flex; gap: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; margin: 0 -20px 24px; padding: 0 20px 4px; scrollbar-width: none }
-    .stats-scroll::-webkit-scrollbar { display: none }
-    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; min-width: 160px; flex-shrink: 0; scroll-snap-align: start; box-shadow: var(--shadow); position: relative; transition: border-color .3s; animation: fadeUp .4s ease both; }
-    .stat-card.filtered { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-    .stat-card:nth-child(2) { animation-delay: .05s } .stat-card:nth-child(3) { animation-delay: .1s }
-    
-    .stat-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px }
-    .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--text-dark); line-height: 1.1; letter-spacing: -0.5px; }
-    #stat-value { color: var(--accent2); } /* Total em verde */
-    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px }
-    .stat-filter-badge { position: absolute; top: 12px; right: 12px; background: rgba(20, 183, 116, 0.1); color: var(--accent2); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase }
+    /* ================= TOOLBAR DA TABELA ================= */
+    .table-toolbar { background: var(--surface); padding: 12px 16px; border: 1px solid var(--border); border-bottom: none; border-radius: var(--r) var(--r) 0 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .toolbar-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--accent); padding: 6px 10px; border-radius: var(--r); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+    .local-search { position: relative; max-width: 400px; width: 100%; }
+    .local-search input { width: 100%; background: var(--surface); border: 1px solid var(--border); padding: 8px 32px 8px 12px; border-radius: var(--r); font-size: 13px; color: var(--text-dark); outline: none; }
+    .local-search input:focus { border-color: var(--accent); }
+    .local-search .s-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 14px; cursor: pointer; }
+    .toolbar-right { display: flex; gap: 8px; }
 
-    /* SEARCH & TOOLBAR */
-    .toolbar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center }
-    .search-wrap { position: relative; flex: 1; min-width: 0 }
-    .search-wrap input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text-dark); padding: 10px 40px 10px 40px; border-radius: 6px; font-family: inherit; font-size: 14px; outline: none; transition: border-color .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .search-wrap input:focus { border-color: var(--accent); outline: 2px solid rgba(20, 183, 116, 0.1); }
-    .search-wrap .s-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none }
-    .search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; padding: 4px; display: none; line-height: 1; }
-    .search-clear.visible { display: block }
-
-    /* TABLE */
-    .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }
-    .table-scroll { overflow-x: auto }
+    /* ================= TABELA ================= */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 0 0 var(--r) var(--r); overflow-x: auto; box-shadow: var(--shadow); margin-bottom: 40px; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    thead tr { background: #f8fafc; border-bottom: 1px solid var(--border); }
-    th { padding: 14px 16px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap }
-    td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 14px; color: var(--text); }
-    tr:last-child td { border-bottom: none }
-    tr:hover td { background: rgba(0, 0, 0, 0.015); }
+    thead tr { border-bottom: 1px solid var(--border); }
+    th { padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text-dark); white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: rgba(0, 0, 0, 0.02); }
+    body.dark-mode tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
     
-    .service-name { font-weight: 600; color: var(--text-dark); font-size: 14px; margin-bottom: 2px; }
-    .qty-badge { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: 500; }
+    .cb-cell { width: 40px; text-align: center; }
+    .cb-cell input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
     
-    .user-chip { display: inline-flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid var(--border); padding: 4px 10px; border-radius: 12px; font-size: 12px; color: var(--text-dark); font-weight: 500; }
-    .managed-chip { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.2); color: #2563eb; }
+    .service-desc { font-weight: 500; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .copy-icon { font-size: 10px; color: var(--muted); cursor: pointer; }
+    .notes-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
     
-    .period-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600; }
-    .period-chip.open { background: rgba(20, 183, 116, 0.1); color: var(--accent2); border: 1px solid rgba(20, 183, 116, 0.2); }
-    .period-chip.closed { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
+    .val-green { color: var(--accent); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .val-green::before { content: '✎'; font-size: 10px; opacity: 0.7; }
     
-    .min-pill { background: rgba(20, 183, 116, 0.1); color: var(--accent2); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-    .value-text { font-weight: 700; color: var(--accent2); }
-    
-    .actions { display: flex; gap: 8px }
-    .btn-icon { background: var(--surface); border: 1px solid var(--border); color: var(--muted); width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .btn-icon.edit:hover { border-color: var(--info); color: var(--info); background: rgba(59, 130, 246, 0.05); }
-    .btn-icon.del:hover { border-color: var(--danger); color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+    .actions-cell { text-align: right; white-space: nowrap; }
+    .btn-row-action { background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; margin-left: 8px; transition: color 0.2s; }
+    .btn-row-action:hover { color: var(--accent); }
+    .btn-row-action.danger:hover { color: var(--danger); }
 
-    /* MOBILE CARDS */
-    .cards-list { display: flex; flex-direction: column; gap: 12px }
-    .rec-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); animation: fadeUp .3s ease both; }
-    .rec-card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap }
-    .rec-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px }
-    .rec-card-name { font-weight: 600; font-size: 15px; color: var(--text-dark); line-height: 1.3 }
-    .rec-card-note { font-size: 13px; color: var(--muted); margin-top: 4px }
-    .rec-card-actions { display: flex; gap: 8px; flex-shrink: 0 }
-    
-    .rec-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border) }
-    .rec-info-item .lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px }
-    .rec-info-item .val { font-size: 14px; font-weight: 500; color: var(--text-dark); }
-    .rec-info-item .val.accent { color: var(--accent2); font-weight: 700; font-size: 16px; }
-    .rec-info-item .val.green { color: var(--accent2); font-weight: 600; }
+    /* ================= SIDEBAR (DIREITA) ================= */
+    .btn-incluir { width: 100%; background: var(--accent); color: #fff; border: none; padding: 12px; border-radius: var(--r); font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; box-shadow: 0 2px 4px rgba(30, 185, 116, 0.2); }
+    .btn-incluir:hover { background: var(--accent-hover); }
 
-    /* RESPONSIVE */
-    .mobile-only { display: none } .desktop-only { display: block }
-    @media(max-width: 699px) {
-      .mobile-only { display: block } .desktop-only { display: none }
-      .main { padding: 16px; padding-bottom: calc(100px + var(--safe-bot)) }
-      .header { padding: 0 16px; padding-top: var(--safe-top) }
-    }
-
-    /* EMPTY & ALERTS */
-    .empty-state { text-align: center; padding: 64px 20px; color: var(--muted) }
-    .empty-state .icon { font-size: 40px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-state p { font-size: 14px; font-weight: 500; }
+    .sidebar-panel { background: var(--surface); border-radius: var(--r); border: 1px solid var(--border); box-shadow: var(--shadow); }
     
-    .no-period-alert { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--r); padding: 14px 16px; color: #b91c1c; font-size: 13px; font-weight: 500; margin-bottom: 20px; display: none; display: flex; align-items: center; gap: 8px; }
+    .panel-actions ul { list-style: none; padding: 8px 0; }
+    .panel-actions li button { width: 100%; text-align: left; background: none; border: none; padding: 10px 16px; font-size: 13px; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--bg); transition: all 0.2s; }
+    .panel-actions li:last-child button { border-bottom: none; }
+    .panel-actions li button:hover { background: var(--bg); color: var(--text-dark); padding-left: 20px; }
+    .panel-actions li button .p-icon { color: var(--muted); font-size: 16px; }
 
-    /* BUTTONS */
-    .fab { position: fixed; bottom: calc(24px + var(--safe-bot)); right: 20px; z-index: 90; width: 56px; height: 56px; background: var(--accent); color: #fff; border: none; border-radius: 50%; font-size: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(20, 183, 116, 0.3); transition: all .2s; }
-    .fab:active { transform: scale(.92) }
-    @media(hover:hover){ .fab:hover { background: var(--accent2); transform: translateY(-2px); } }
+    .panel-actions-header { padding: 16px; border-bottom: 1px solid var(--bg); font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .panel-actions-header.green-text { color: var(--accent); border-bottom: none; padding-bottom: 8px; }
 
-    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all .2s; box-shadow: 0 1px 2px rgba(20, 183, 116, 0.2); white-space: nowrap; }
-    .btn-primary:active { transform: translateY(1px); }
-    .btn-primary:hover { background: var(--accent2); box-shadow: 0 2px 4px rgba(20, 183, 116, 0.3); }
-    
-    .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-dark); padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all .2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
-    
-    .btn-danger { background: var(--danger); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all .2s; }
-    .btn-danger:hover { background: #dc2626; }
-    
-    .btn-warning { background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.2); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; transition: all .2s; white-space: nowrap; }
-    .btn-warning:hover { background: rgba(245, 158, 11, 0.15); }
+    .panel-info { padding: 16px; }
+    .info-block { margin-bottom: 16px; }
+    .info-block:last-child { margin-bottom: 0; }
+    .info-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .info-val { display: block; font-size: 18px; font-weight: 700; color: var(--text-dark); }
+    .info-val.green { color: var(--accent); }
 
-    /* MODAL */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 200; align-items: flex-end; justify-content: center; backdrop-filter: blur(2px); }
+    /* ================= MODAIS & COMPONENTES ================= */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
     .modal-overlay.open { display: flex }
-    .modal { background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 100%; max-height: 94dvh; overflow-y: auto; border-radius: 16px 16px 0 0; animation: slideUp .28s cubic-bezier(.32,1,.36,1) both; padding-bottom: var(--safe-bot); box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
-    .modal-handle { width: 40px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 12px auto 0 }
+    .modal { background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: scaleIn .2s ease both; }
     .modal-inner { padding: 24px }
     
-    @media(min-width: 600px) {
-      .modal-overlay { align-items: center; padding: 20px }
-      .modal { max-width: 580px; border-radius: 12px; animation: scaleIn .22s ease both; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
-      .modal-handle { display: none }
-      .modal-inner { padding: 32px }
-    }
-    
-    .modal-title { font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin-bottom: 24px; letter-spacing: -0.5px; }
-    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .modal-title { font-size: 1.2rem; font-weight: 600; color: var(--text-dark); margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
 
     /* FORMS */
     .form-grid { display: grid; gap: 16px }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px }
-    @media(max-width: 480px) { .form-row { grid-template-columns: 1fr } }
+    .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-dark); margin-bottom: 6px }
+    .field input, .field textarea, .field select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 10px 12px; border-radius: var(--r); font-family: inherit; font-size: 13px; outline: none; transition: border-color .2s; }
+    .field input:focus, .field select:focus { border-color: var(--accent); background: var(--surface); }
     
-    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px }
-    .field label span.opt { font-weight: 400; color: var(--muted); margin-left: 4px; font-size: 11px }
-    
-    .field input, .field textarea, .field select { width: 100%; background: var(--surface); border: 1px solid #cbd5e1; color: var(--text-dark); padding: 12px 14px; border-radius: 6px; font-family: inherit; font-size: 15px; outline: none; transition: border-color .2s, box-shadow .2s; appearance: none; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
-    .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); box-shadow: inset 0 1px 2px rgba(0,0,0,0.02), 0 0 0 3px rgba(20, 183, 116, 0.1); }
-    .field textarea { resize: vertical; min-height: 80px }
-    
-    .select-arrow { position: relative }
-    .select-arrow::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; font-size: 14px; font-weight: bold; }
+    .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text-dark); padding: 10px 20px; border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; transition: all .2s; }
+    .btn-secondary:hover { background: var(--bg); }
+    .btn-primary { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; transition: all .2s; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-danger { background: var(--danger); color: #fff; border: none; padding: 10px 20px; border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; }
 
-    /* CALC PREVIEW */
-    .calc-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 8px; }
-    .calc-formula { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px }
-    .calc-formula .cf-val { font-size: 1.1rem; font-weight: 600; color: var(--text-dark) }
-    .calc-formula .cf-op { font-size: 1rem; color: #94a3b8; font-weight: bold; }
-    .calc-formula .cf-result { font-size: 1.3rem; font-weight: 700; color: var(--accent2); }
-    .calc-sub { font-size: 12px; color: var(--muted); text-align: center; font-weight: 500; }
+    /* RESPONSIVIDADE BÁSICA */
+    @media(max-width: 900px) {
+      .bling-layout { flex-direction: column; padding: 16px; }
+      .sidebar-right { width: 100%; }
+      .header-center { display: none; }
+    }
 
-    /* COMPONENTES SECUNDÁRIOS */
-    .period-list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .period-list-info { flex: 1; min-width: 0 }
-    .period-list-name { font-weight: 600; font-size: 14px; color: var(--text-dark); }
-    .period-list-sub { font-size: 12px; color: var(--muted); margin-top: 4px }
-    .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 12px; font-weight: 600; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-    .status-open { background: rgba(20, 183, 116, 0.1); color: var(--accent2); border: 1px solid rgba(20, 183, 116, 0.2) }
-    .status-closed { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border) }
-
-    .tabs { display: flex; gap: 4px; background: #f1f5f9; border-radius: 8px; padding: 4px; margin-bottom: 24px }
-    .tab-btn { flex: 1; padding: 10px; border: none; background: none; color: var(--muted); border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all .2s }
-    .tab-btn.active { background: var(--surface); color: var(--text-dark); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .tab-pane { display: none } .tab-pane.active { display: block }
-
-    .user-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px }
-    .user-list-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .user-list-avatar { width: 36px; height: 36px; border-radius: 50%; background: #f1f5f9; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; overflow: hidden }
-    .user-list-info { flex: 1; min-width: 0 }
-    .user-list-name { font-weight: 600; font-size: 14px; color: var(--text-dark); }
-    .user-list-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
-    
-    .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 }
-    .divider span { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; white-space: nowrap }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border) }
-
-    .confirm-inner { text-align: center; padding: 16px 20px 24px }
-    .confirm-icon { font-size: 48px; margin-bottom: 16px }
-    .confirm-inner h3 { font-size: 1.4rem; font-weight: 700; color: var(--text-dark); margin-bottom: 8px }
-    .confirm-inner p { color: var(--muted); font-size: 14px; margin-bottom: 24px }
-
-    /* TOAST */
-    #toast-container { position: fixed; bottom: calc(88px + var(--safe-bot)); left: 16px; right: 16px; z-index: 500; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none }
-    @media(min-width: 600px) { #toast-container { bottom: 32px; left: auto; right: 32px; align-items: flex-end } }
-    .toast { background: var(--text-dark); color: #fff; padding: 14px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 12px; animation: slideUp .3s ease both; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 360px; width: 100% }
+    /* TOAST / LOADING */
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 500; display: flex; flex-direction: column; gap: 8px; pointer-events: none }
+    .toast { background: var(--text-dark); color: var(--bg); padding: 12px 20px; border-radius: var(--r); font-size: 13px; display: flex; align-items: center; gap: 12px; animation: slideUp .3s ease both; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .toast.success { border-left: 4px solid var(--success) } .toast.error { border-left: 4px solid var(--danger) }
-
-    /* LOADING */
+    
     #loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; transition: opacity .4s }
     #loading-overlay.hidden { opacity: 0; pointer-events: none }
-    .spinner { width: 48px; height: 48px; border: 4px solid #cbd5e1; border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite }
-    .loading-text { color: var(--muted); font-size: 14px; font-weight: 600; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite }
 
-    /* CALCULADOR DE INTERVALOS */
-    .btn-calc-toggle { background: #f8fafc; border: 1px solid #cbd5e1; color: var(--muted); width: 44px; height: 44px; border-radius: 6px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .2s; }
-    .btn-calc-toggle:hover, .btn-calc-toggle.active { background: rgba(20, 183, 116, 0.1); border-color: rgba(20, 183, 116, 0.3); color: var(--accent2); }
-    .minutes-input-row { display: flex; gap: 8px; align-items: center }
-    .minutes-input-row input { flex: 1 }
-
-    .calc-panel { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; animation: fadeUp .2s ease both }
-    .calc-panel-header { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-dark); text-transform: uppercase; margin-bottom: 16px }
-    .calc-panel-close { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; border-radius: 4px; transition: color .15s; }
-    .calc-panel-close:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+    /* COMPONENTES EXTRAS MANTIDOS (Calculadora, Tabs, etc) */
+    .tabs { display: flex; gap: 4px; background: var(--bg); border-radius: var(--r); padding: 4px; margin-bottom: 16px }
+    .tab-btn { flex: 1; padding: 8px; border: none; background: none; color: var(--muted); border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; }
+    .tab-btn.active { background: var(--surface); color: var(--text-dark); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .tab-pane { display: none } .tab-pane.active { display: block }
+    .period-list-item, .user-list-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .status-pill { font-size: 10px; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
+    .status-open { background: rgba(30, 185, 116, 0.15); color: var(--accent); }
+    .status-closed { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
     
-    .calc-interval-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: flex-end; margin-bottom: 12px }
-    .calc-interval-row .cif label { font-size: 11px; margin-bottom: 4px }
-    .btn-rem-interval { background: var(--surface); border: 1px solid var(--border); color: var(--muted); width: 44px; height: 44px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
-    .btn-rem-interval:hover { border-color: var(--danger); color: var(--danger); background: rgba(239, 68, 68, 0.05); }
-    .btn-rem-interval:disabled { opacity: .4; cursor: default; pointer-events: none }
-
-    .btn-add-interval { background: transparent; border: 1px dashed #cbd5e1; color: var(--muted); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s; margin-top: 4px; width: 100%; }
-    .btn-add-interval:hover { border-color: var(--accent); color: var(--accent2); background: rgba(20, 183, 116, 0.05); }
-
-    .calc-intervals-result { background: rgba(20, 183, 116, 0.05); border: 1px solid rgba(20, 183, 116, 0.2); border-radius: 8px; padding: 12px 16px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px }
-    .calc-res-items { display: flex; gap: 16px; flex-wrap: wrap }
-    .calc-res-items > div { display: flex; flex-direction: column; gap: 4px }
-    .calc-res-lbl { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
-    .calc-res-val { font-size: 15px; font-weight: 700; color: var(--accent2) }
-    .calc-res-val.lunch-deduct { color: var(--danger) }
-    
-    .btn-apply-mins { background: var(--accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; box-shadow: 0 1px 2px rgba(20, 183, 116, 0.2); }
-    .btn-apply-mins:hover { background: var(--accent2) }
-    .calc-err { font-size: 12px; font-weight: 500; color: var(--danger); margin-top: 8px; min-height: 18px }
-
     @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
     @keyframes scaleIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
-    @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
 
-<div id="loading-overlay"><div class="spinner"></div><div class="loading-text">Carregando o sistema...</div></div>
+<div id="loading-overlay"><div class="spinner"></div></div>
 
-<!-- LOGIN -->
+<!-- ================= TELA DE LOGIN ================= -->
 <div id="screen-login" class="screen">
   <div class="login-box">
-    <div class="login-logo">
-      <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M13 7h-2v6h6v-2h-4z"/></svg>
-    </div>
+    <div class="login-logo">!</div>
     <h1>ServiçoHoras</h1>
-    <p>Controle de horas e produtividade</p>
+    <p>Acesse para gerenciar seus registros</p>
     <button class="btn-google" onclick="signInGoogle()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.3 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.6-8 19.6-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.7-11.3-6.6L6 34.3C9.4 40 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.7 2-2 3.8-3.8 5l6.2 5.3C41 34.8 44 29.8 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.7 33.3 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.6-8 19.6-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.3C29.4 35.6 26.8 36 24 36c-5.2 0-9.6-2.7-11.3-6.6L6 34.3C9.4 40 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.7 2-2 3.8-3.8 5l6.2 5.3C41 34.8 44 29.8 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
       Entrar com Google
     </button>
   </div>
 </div>
 
-<!-- APP -->
+<!-- ================= TELA DO APP ================= -->
 <div id="screen-app" class="screen">
+  
+  <!-- HEADER -->
   <header class="header">
-    <div class="header-logo">
-      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 6.486 2 12s4.486 10 10 10 10-4.486 10-10S17.514 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8z"/><path d="M13 7h-2v6h6v-2h-4z"/></svg>
+    <div class="header-left">
+      <div class="header-logo">!</div>
+      <div class="header-nav">
+        <span class="nav-item">Cadastros</span>
+        <span class="nav-item">Lançamentos</span>
+      </div>
     </div>
-    <span class="header-title">ServiçoHoras</span>
-    <div class="header-spacer"></div>
-    <span id="badge-admin" class="badge-admin" style="display:none">Admin</span>
-    
-    <button id="btn-periods" class="btn-header" style="display:none" onclick="openPeriodsModal()">📅 Períodos</button>
-    <button id="btn-users"   class="btn-header" style="display:none" onclick="openUsersModal()">👥 Usuários</button>
-    <button id="btn-report"  class="btn-header" style="display:none" onclick="openReportModal()">🖨️ Relatório</button>
-    
-    <img id="user-avatar" class="user-avatar" src="" alt="" style="display:none"/>
-    <button class="btn-header danger" onclick="signOut()">Sair</button>
+    <div class="header-center">
+      <div class="header-search">
+        <span class="icon">🔍</span>
+        <input type="search" id="global-search" placeholder="Pesquisar..." oninput="syncSearch(this.value)"/>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="header-icon-btn" onclick="toggleDarkMode()" title="Alternar Tema Escuro">🌓</button>
+      <span id="badge-admin" class="badge-admin" style="display:none">Admin</span>
+      <img id="user-avatar" class="user-avatar" src="" alt="" style="display:none"/>
+      <button class="header-icon-btn" onclick="signOut()" title="Sair do Sistema">⚙️</button>
+    </div>
   </header>
 
-  <main class="main">
-    <div class="page-header">
-      <h2>Registros de Serviços</h2>
-      <p id="page-subtitle">Carregando os apontamentos...</p>
-    </div>
-
-    <!-- PERIOD PILLS -->
-    <div class="periods-row" id="periods-row"></div>
-
-    <!-- NO OPEN PERIOD WARNING -->
-    <div class="no-period-alert" id="no-period-alert">
-      ⚠️ Nenhum período aberto no momento. Solicite ao administrador para criar um novo período.
-    </div>
-
-    <!-- STATS -->
-    <div class="stats-scroll">
-      <div class="stat-card" id="sc-total">
-        <div class="stat-label">Registros</div>
-        <div class="stat-value" id="stat-total">0</div>
-        <div class="stat-sub" id="stat-total-sub">cadastrados</div>
+  <!-- LAYOUT DUAS COLUNAS -->
+  <div class="bling-layout">
+    
+    <!-- CONTEÚDO PRINCIPAL (ESQUERDA) -->
+    <main class="main-content">
+      
+      <!-- SUBHEADER / BREADCRUMBS -->
+      <div class="page-subheader">
+        <span class="breadcrumb-dots">...</span>
+        <span class="breadcrumb-arrow">›</span>
+        <h2 class="page-title">
+          Registros
+          <div class="period-dropdown-wrap">
+            <select id="header-period-select" onchange="selectPeriod(this.value)">
+              <!-- Preenchido via JS -->
+            </select>
+          </div>
+        </h2>
       </div>
-      <div class="stat-card" id="sc-mins">
-        <div class="stat-label">Tempo Gasto</div>
-        <div class="stat-value" id="stat-mins">0</div>
-        <div class="stat-sub" id="stat-mins-sub">trabalhados</div>
-      </div>
-      <div class="stat-card" id="sc-value">
-        <div class="stat-label">Valor Total</div>
-        <div class="stat-value" id="stat-value">R$ 0,00</div>
-        <div class="stat-sub">a receber</div>
-      </div>
-      <div class="stat-card" id="sc-qty" style="display:none">
-        <div class="stat-label">Quantidade</div>
-        <div class="stat-value" id="stat-qty" style="font-size:1.4rem">—</div>
-        <div class="stat-sub" id="stat-qty-sub">nos resultados</div>
-      </div>
-    </div>
 
-    <!-- TOOLBAR -->
-    <div class="toolbar">
-      <div class="search-wrap">
-        <span class="s-icon">🔍</span>
-        <input type="search" id="search-input" placeholder="Buscar por serviço, observação ou usuário..." oninput="onSearch()" autocomplete="off"/>
-        <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+      <!-- TOOLBAR DA TABELA -->
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <button class="filter-btn">▼</button>
+          <div class="local-search">
+            <input type="search" id="search-input" placeholder="Pesquisar por descrição ou observação" oninput="onSearch()"/>
+            <span class="s-icon" onclick="clearSearch()">🔍</span>
+          </div>
+          <span style="font-size:12px;color:var(--muted);margin-left:8px;" id="filter-status">Situação: Todos</span>
+        </div>
+        <div class="toolbar-right">
+          <button class="header-icon-btn" onclick="openReportModal()" title="Imprimir" style="border:1px solid var(--border)"><span style="font-size:14px">🖨️</span></button>
+        </div>
       </div>
-      <button class="btn-primary desktop-only" onclick="openAddModal()">＋ Novo Registro</button>
-    </div>
 
-    <!-- DESKTOP TABLE -->
-    <div class="table-wrap desktop-only">
-      <div class="table-scroll">
+      <!-- TABELA -->
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
+              <th class="cb-cell"><input type="checkbox" disabled></th>
               <th>Descrição do Serviço</th>
               <th id="th-user" style="display:none">Profissional</th>
-              <th>Período</th>
-              <th>Tempo</th>
-              <th>Taxa (R$/min)</th>
+              <th>Status Período</th>
+              <th>Tempo Apurado</th>
+              <th>Taxa (R$)</th>
               <th>Total Bruto</th>
-              <th style="width: 80px"></th>
+              <th></th>
             </tr>
           </thead>
-          <tbody id="table-body"></tbody>
+          <tbody id="table-body">
+            <!-- Renderizado via JS -->
+          </tbody>
         </table>
       </div>
-    </div>
+      
+    </main>
 
-    <!-- MOBILE CARDS -->
-    <div class="mobile-only">
-      <div id="cards-list" class="cards-list"></div>
-    </div>
-  </main>
+    <!-- SIDEBAR (DIREITA) -->
+    <aside class="sidebar-right">
+      
+      <button class="btn-incluir" onclick="openAddModal()">＋ Incluir lançamento</button>
+
+      <!-- PAINEL ADMIN: MAIS AÇÕES -->
+      <div class="sidebar-panel panel-actions" id="admin-actions" style="display:none">
+        <div class="panel-actions-header green-text">＋ Mais ações</div>
+        <ul>
+          <li><button onclick="openPeriodsModal()"><span class="p-icon">📅</span> Gerenciar períodos</button></li>
+          <li><button onclick="openUsersModal()"><span class="p-icon">👥</span> Usuários e Indicadores</button></li>
+          <li><button onclick="openReportModal()"><span class="p-icon">📄</span> Exportar Relatórios PDF</button></li>
+        </ul>
+      </div>
+
+      <!-- PAINEL INFORMAÇÕES -->
+      <div class="sidebar-panel panel-info">
+        <div class="panel-actions-header" style="padding:0 0 16px 0;">Informações</div>
+        
+        <div class="info-block">
+          <span class="info-label">Quantidade de Registros</span>
+          <span class="info-val green" id="stat-total">0</span>
+        </div>
+        
+        <div class="info-block">
+          <span class="info-label">Tempo Total Trabalhado</span>
+          <span class="info-val" id="stat-mins">0</span>
+        </div>
+        
+        <div class="info-block">
+          <span class="info-label">Previsão a Receber</span>
+          <span class="info-val" id="stat-value">R$ 0,00</span>
+        </div>
+      </div>
+
+    </aside>
+  </div>
 </div>
 
-<button class="fab mobile-only" onclick="openAddModal()">＋</button>
+<!-- ================= MODAIS (MANTIDOS E ADAPTADOS) ================= -->
 
-<!-- ══ MODAL: FORM ══ -->
+<!-- MODAL: NOVO REGISTRO -->
 <div id="modal-form" class="modal-overlay" onclick="closeOnOverlay(event,'modal-form')">
   <div class="modal">
-    <div class="modal-handle"></div>
     <div class="modal-inner">
-      <div class="modal-title" id="modal-title">Novo Registro</div>
+      <div class="modal-title" id="modal-title">Incluir Lançamento</div>
       <div class="form-grid">
 
         <div class="field" id="field-assign" style="display:none">
-          <label>Atribuir Lançamento a</label>
-          <div class="select-arrow">
-            <select id="f-assign" style="padding-right:36px">
-              <option value="">— Meu próprio registro —</option>
-            </select>
-          </div>
+          <label>Profissional (Indicador)</label>
+          <select id="f-assign"><option value="">— Meu próprio registro —</option></select>
         </div>
 
         <div class="field">
           <label>Competência (Período) *</label>
-          <div class="select-arrow">
-            <select id="f-period" style="padding-right:36px" onchange="updatePeriodWarning()">
-              <option value="">— Selecione um período —</option>
-            </select>
-          </div>
-          <div id="period-closed-warn" style="font-size:12px;color:var(--danger);font-weight:500;margin-top:6px;display:none">⚠️ Atenção: Este período já foi fechado.</div>
+          <select id="f-period" onchange="updatePeriodWarning()"><option value="">— Selecione um período —</option></select>
+          <div id="period-closed-warn" style="font-size:11px;color:var(--danger);margin-top:4px;display:none">Este período está bloqueado/fechado.</div>
         </div>
 
         <div class="field">
-          <label>Nome do Serviço *</label>
+          <label>Descrição do Serviço *</label>
           <input type="text" id="f-service" placeholder="Ex: Ajuste de modelagem" autocomplete="off"/>
         </div>
 
         <div class="form-row">
           <div class="field">
             <label>Tempo Gasto (Minutos) *</label>
-            <div class="minutes-input-row">
-              <input type="number" id="f-minutes" step="1" min="1" placeholder="Ex: 120" inputmode="numeric" oninput="updateCalc()"/>
-              <button type="button" class="btn-calc-toggle" id="btn-calc-toggle" onclick="toggleCalcPanel()" title="Calcular por horários de apontamento">⏱</button>
-            </div>
-            
-            <!-- PAINEL DO CALCULADOR -->
-            <div id="calc-panel" class="calc-panel" style="display:none">
-              <div class="calc-panel-header">
-                <span>Calculadora de Apontamentos</span>
-                <button type="button" class="calc-panel-close" onclick="toggleCalcPanel()">✕</button>
-              </div>
-              <div id="calc-intervals-container"></div>
-              <button type="button" class="btn-add-interval" onclick="addCalcInterval()">＋ Adicionar novo intervalo</button>
-              <div id="calc-err" class="calc-err"></div>
-              
-              <div id="calc-intervals-result" class="calc-intervals-result" style="display:none">
-                <div class="calc-res-items">
-                  <div>
-                    <span class="calc-res-lbl">Registros</span>
-                    <span class="calc-res-val" id="calc-res-count">—</span>
-                  </div>
-                  <div>
-                    <span class="calc-res-lbl">Bruto</span>
-                    <span class="calc-res-val" id="calc-res-gross">—</span>
-                  </div>
-                  <div id="calc-res-lunch-wrap" style="display:none">
-                    <span class="calc-res-lbl">Desconto</span>
-                    <span class="calc-res-val lunch-deduct" id="calc-res-lunch">—</span>
-                  </div>
-                  <div>
-                    <span class="calc-res-lbl">Líquido</span>
-                    <span class="calc-res-val" id="calc-res-mins">—</span>
-                  </div>
-                  <div>
-                    <span class="calc-res-lbl">Horas</span>
-                    <span class="calc-res-val" id="calc-res-hrs">—</span>
-                  </div>
-                </div>
-                <button type="button" class="btn-apply-mins" onclick="applyCalcMins()">Confirmar Tempo</button>
-              </div>
+            <div style="display:flex;gap:8px">
+              <input type="number" id="f-minutes" step="1" min="1" placeholder="Ex: 120" oninput="updateCalc()"/>
             </div>
           </div>
-
           <div class="field">
             <label>Taxa (R$ por Minuto) *</label>
-            <input type="number" id="f-rate" step="0.0001" min="0" placeholder="Ex: 0.85" inputmode="decimal" oninput="updateCalc()"/>
+            <input type="number" id="f-rate" step="0.0001" min="0" placeholder="Ex: 0.85" oninput="updateCalc()"/>
           </div>
         </div>
 
         <div class="form-row">
           <div class="field">
-            <label>Quantidade de Peças <span class="opt">(opcional)</span></label>
-            <input type="text" id="f-qty" placeholder="Ex: 10 un" autocomplete="off"/>
+            <label>Qtd. (opcional)</label>
+            <input type="text" id="f-qty" placeholder="Ex: 10 un"/>
           </div>
           <div class="field">
-            <label>Observações Adicionais <span class="opt">(opcional)</span></label>
-            <input type="text" id="f-notes" placeholder="Detalhes ou código do lote"/>
+            <label>Observações</label>
+            <input type="text" id="f-notes" placeholder="Detalhes da ficha"/>
           </div>
         </div>
 
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-dark);margin-bottom:8px;">Resumo do Cálculo</label>
-          <div class="calc-box">
-            <div class="calc-formula">
-              <span class="cf-val" id="cf-min">— min</span>
-              <span class="cf-op">×</span>
-              <span class="cf-val" id="cf-rate">R$ —</span>
-              <span class="cf-op">=</span>
-              <span class="cf-result" id="cf-total">—</span>
-            </div>
-            <div class="calc-sub" id="cf-dur">Preencha os campos de Tempo e Taxa para calcular</div>
+        <div style="background:var(--bg); padding:12px; border-radius:var(--r); border:1px solid var(--border); margin-top:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; color:var(--muted)">Cálculo Prévio</span>
+            <span style="font-size:18px; font-weight:700; color:var(--accent)" id="cf-total">R$ 0,00</span>
           </div>
         </div>
       </div>
@@ -540,91 +424,68 @@
   </div>
 </div>
 
-<!-- ══ MODAL: PERÍODOS ══ -->
+<!-- MODAL: PERÍODOS -->
 <div id="modal-periods" class="modal-overlay" onclick="closeOnOverlay(event,'modal-periods')">
-  <div class="modal" style="max-width:620px">
-    <div class="modal-handle"></div>
+  <div class="modal">
     <div class="modal-inner">
       <div class="modal-title">Gerenciar Períodos</div>
-      <div id="periods-list" style="margin-bottom:24px"></div>
+      <div id="periods-list" style="margin-bottom:24px; max-height:200px; overflow-y:auto;"></div>
       
-      <div class="divider"><span>Cadastrar Novo Período</span></div>
-      <div class="form-grid" style="gap:16px">
-        <div class="field">
-          <label>Identificação do Período *</label>
-          <input type="text" id="per-name" placeholder="Ex: Fechamento Junho 2026"/>
-        </div>
-        <div class="field">
-          <label>Descrição Auxiliar <span class="opt">(opcional)</span></label>
-          <input type="text" id="per-desc" placeholder="Ex: Produção referente ao mês de junho"/>
-        </div>
-        <button class="btn-primary" style="justify-content:center" onclick="createPeriod()">＋ Salvar Período</button>
+      <div class="form-grid" style="border-top:1px solid var(--border); padding-top:16px;">
+        <div class="field"><label>Nome do Período *</label><input type="text" id="per-name"/></div>
+        <button class="btn-primary" onclick="createPeriod()">＋ Criar Período</button>
       </div>
       <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('modal-periods')">Fechar</button></div>
     </div>
   </div>
 </div>
 
-<!-- ══ MODAL: USUÁRIOS ══ -->
+<!-- MODAL: USUÁRIOS -->
 <div id="modal-users" class="modal-overlay" onclick="closeOnOverlay(event,'modal-users')">
-  <div class="modal" style="max-width:620px">
-    <div class="modal-handle"></div>
+  <div class="modal">
     <div class="modal-inner">
-      <div class="modal-title">Gestão de Profissionais</div>
+      <div class="modal-title">Gerenciar Profissionais</div>
       <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('tab-managed',event)">👤 Usuários Indicadores</button>
-        <button class="tab-btn" onclick="switchTab('tab-auth',event)">🔑 Acessos ao Sistema</button>
+        <button class="tab-btn active" onclick="switchTab('tab-managed',event)">Indicadores S/ Login</button>
+        <button class="tab-btn" onclick="switchTab('tab-auth',event)">Acessos Google</button>
       </div>
-      
       <div class="tab-pane active" id="tab-managed">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">Crie perfis (indicadores) para profissionais que não possuem login próprio. O Admin fará os lançamentos em nome deles.</p>
-        <div id="managed-list" class="user-list"></div>
-        <div class="divider"><span>Cadastrar Novo Indicador</span></div>
-        <div class="form-grid" style="gap:16px">
-          <div class="field"><label>Nome Completo *</label><input type="text" id="mu-name" placeholder="Ex: Carlos Silva"/></div>
-          <div class="field"><label>Função / Observação <span class="opt">(opcional)</span></label><input type="text" id="mu-desc" placeholder="Ex: Acabamento"/></div>
-          <button class="btn-primary" style="justify-content:center" onclick="createManagedUser()">＋ Salvar Indicador</button>
+        <div id="managed-list" style="max-height:200px; overflow-y:auto; margin-bottom:16px;"></div>
+        <div class="form-grid" style="border-top:1px solid var(--border); padding-top:16px;">
+          <div class="field"><label>Nome do Indicador *</label><input type="text" id="mu-name"/></div>
+          <button class="btn-primary" onclick="createManagedUser()">＋ Criar</button>
         </div>
       </div>
-      
       <div class="tab-pane" id="tab-auth">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Listagem de usuários que já se autenticaram no sistema via Google.</p>
-        <div id="auth-list" class="user-list"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Buscando cadastros...</div></div>
+        <div id="auth-list" style="max-height:300px; overflow-y:auto;"></div>
       </div>
       <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('modal-users')">Fechar</button></div>
     </div>
   </div>
 </div>
 
-<!-- ══ MODAL: RELATÓRIO ══ -->
+<!-- MODAL: RELATÓRIO -->
 <div id="modal-report" class="modal-overlay" onclick="closeOnOverlay(event,'modal-report')">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-handle"></div>
+  <div class="modal">
     <div class="modal-inner">
-      <div class="modal-title">Impressão de Fechamento</div>
+      <div class="modal-title">Exportar Relatório</div>
       <div class="form-grid">
         <div class="field">
-          <label>Filtrar por Período *</label>
-          <div class="select-arrow">
-            <select id="rep-period" style="padding-right:36px">
-              <option value="">— Selecione o período —</option>
-            </select>
-          </div>
+          <label>Período *</label>
+          <select id="rep-period"></select>
         </div>
         <div class="field">
-          <label>Profissionais a incluir no relatório</label>
-          <div id="rep-users-list" style="max-height:220px; overflow-y:auto; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
-            <!-- Checkboxes injetados via JS -->
-          </div>
-          <label style="margin-top:12px; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+          <label>Profissionais</label>
+          <div id="rep-users-list" style="max-height:200px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:var(--r); padding:8px;"></div>
+          <label style="margin-top:8px; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
             <input type="checkbox" id="rep-all-users" checked onchange="toggleAllRepUsers()">
-            <span style="font-size:13px; font-weight:600; color:var(--text-dark);">Marcar / Desmarcar Todos</span>
+            <span style="font-size:12px; color:var(--text-dark);">Selecionar todos</span>
           </label>
         </div>
       </div>
-      <div class="modal-actions" style="margin-top:24px;">
+      <div class="modal-actions">
         <button class="btn-secondary" onclick="closeModal('modal-report')">Cancelar</button>
-        <button class="btn-primary" onclick="generateReport()">🖨️ Gerar PDF / Imprimir</button>
+        <button class="btn-primary" onclick="generateReport()">🖨️ Imprimir</button>
       </div>
     </div>
   </div>
@@ -632,36 +493,13 @@
 
 <!-- CONFIRMS -->
 <div id="modal-confirm" class="modal-overlay" onclick="closeOnOverlay(event,'modal-confirm')">
-  <div class="modal" style="max-width:400px"><div class="modal-handle"></div>
-    <div class="confirm-inner"><div class="confirm-icon">🗑️</div><h3>Excluir Apontamento</h3>
-      <p>Tem certeza? Esta operação não poderá ser desfeita e os totais serão recalculados.</p>
-      <div style="display:flex;gap:12px;justify-content:center">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-inner" style="text-align:center">
+      <h3 style="color:var(--text-dark); margin-bottom:8px">Excluir Registro?</h3>
+      <p style="color:var(--muted); margin-bottom:24px; font-size:13px">Esta ação não pode ser desfeita.</p>
+      <div style="display:flex;gap:8px;justify-content:center">
         <button class="btn-secondary" onclick="closeModal('modal-confirm')">Cancelar</button>
-        <button class="btn-danger" onclick="confirmDelete()">Excluir Definitivamente</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="modal-close-period" class="modal-overlay" onclick="closeOnOverlay(event,'modal-close-period')">
-  <div class="modal" style="max-width:400px"><div class="modal-handle"></div>
-    <div class="confirm-inner"><div class="confirm-icon">🔒</div><h3>Bloquear Período</h3>
-      <p>O período será marcado como fechado. Lançamentos existentes não poderão ser alterados e novos registros serão bloqueados para esta competência.</p>
-      <div style="display:flex;gap:12px;justify-content:center">
-        <button class="btn-secondary" onclick="closeModal('modal-close-period')">Cancelar</button>
-        <button class="btn-danger" style="background:var(--text-dark)" onclick="confirmClosePeriod()">Bloquear Período</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="modal-confirm-mu" class="modal-overlay" onclick="closeOnOverlay(event,'modal-confirm-mu')">
-  <div class="modal" style="max-width:400px"><div class="modal-handle"></div>
-    <div class="confirm-inner"><div class="confirm-icon">👤</div><h3>Remover Perfil de Indicador</h3>
-      <p>Os serviços já vinculados a este profissional não serão perdidos, apenas o vínculo no cadastro será rompido.</p>
-      <div style="display:flex;gap:12px;justify-content:center">
-        <button class="btn-secondary" onclick="closeModal('modal-confirm-mu')">Cancelar</button>
-        <button class="btn-danger" onclick="confirmDeleteMU()">Remover Perfil</button>
+        <button class="btn-danger" onclick="confirmDelete()">Excluir</button>
       </div>
     </div>
   </div>
@@ -670,14 +508,14 @@
 <div id="toast-container"></div>
 
 <script>
-// --- CREDENCIAIS DO BANCO SUPABASE ---
+// --- CREDENCIAIS ---
 const SUPABASE_URL  = 'https://taryfomwucrqonhlnncl.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcnlmb213dWNycW9uaGxubmNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4Mjk0MjAsImV4cCI6MjA5NTQwNTQyMH0.-wXeA53ZcBaMA8zqsAxA2JWvzoTn-lazyWdEkuLnXc0';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// STATE GERAL
+// --- ESTADO GERAL ---
 let currentUser    = null;
 let isAdmin        = false;
 let allRecords     = [];
@@ -687,176 +525,25 @@ let authProfiles   = [];
 let selectedPeriodId  = null;
 let editingId         = null;
 let deletingId        = null;
-let deletingMUId      = null;
-let closingPeriodId   = null;
-
-// VARIÁVEL DE CONTROLE (Alteração solicitada para o Primeiro Carregamento)[cite: 1]
 let isPrimeiroCarregamento = true; 
 
-// ── CALCULADOR DE INTERVALOS ──
-let calcIntervals = [{id:1, start:'', end:''}];
-let calcNextId    = 2;
-const LUNCH_START = 12 * 60; // 720 min = 12:00
-const LUNCH_END   = 13 * 60; // 780 min = 13:00
-const LUNCH_DURATION = LUNCH_END - LUNCH_START; // 60 min
-
-function lunchDeductionForInterval(s, e) {
-  if (s < LUNCH_START && e > LUNCH_END) return LUNCH_DURATION;
-  return 0;
-}
-
-function toggleCalcPanel(){
-  const panel = document.getElementById('calc-panel');
-  const btn   = document.getElementById('btn-calc-toggle');
-  const open  = panel.style.display === 'none';
-  panel.style.display = open ? 'block' : 'none';
-  btn.classList.toggle('active', open);
-  if(open) renderCalcIntervals();
-}
-
-function addCalcInterval(){
-  calcIntervals.push({id: calcNextId++, start:'', end:''});
-  renderCalcIntervals();
-}
-
-function removeCalcInterval(id){
-  if(calcIntervals.length === 1) return;
-  calcIntervals = calcIntervals.filter(i => i.id !== id);
-  renderCalcIntervals();
-}
-
-function parseCalcTime(s){
-  if(!s) return null;
-  const m = s.match(/^(\d{1,2}):(\d{2})$/);
-  if(!m) return null;
-  const h = parseInt(m[1]), min = parseInt(m[2]);
-  if(h > 23 || min > 59) return null;
-  return h * 60 + min;
-}
-
-function recalcIntervals(){
-  document.getElementById('calc-err').textContent = '';
-  let grossTotal  = 0; 
-  let totalDeduct = 0; 
-  let valid       = 0;
-  let hasErr      = false;
-
-  for(const iv of calcIntervals){
-    if(!iv.start && !iv.end) continue;
-    const s = parseCalcTime(iv.start);
-    const e = parseCalcTime(iv.end);
-    if(s === null || e === null){ hasErr = true; continue; }
-    const diff = e - s;
-    if(diff <= 0){
-      hasErr = true;
-      document.getElementById('calc-err').textContent = '⚠️ Horário final deve ser maior que o inicial';
-      continue;
-    }
-    grossTotal  += diff;
-    totalDeduct += lunchDeductionForInterval(s, e);
-    valid++;
-  }
-
-  const netTotal = grossTotal - totalDeduct;
-  const resEl    = document.getElementById('calc-intervals-result');
-
-  if(valid > 0){
-    resEl.style.display = 'flex';
-    const h  = Math.floor(netTotal / 60);
-    const mn = netTotal % 60;
-
-    document.getElementById('calc-res-count').textContent = valid;
-    document.getElementById('calc-res-gross').textContent = grossTotal + ' min';
-
-    const lunchWrap = document.getElementById('calc-res-lunch-wrap');
-    if(totalDeduct > 0){
-      lunchWrap.style.display = 'flex';
-      document.getElementById('calc-res-lunch').textContent = '−' + totalDeduct + ' min';
-    } else {
-      lunchWrap.style.display = 'none';
-    }
-
-    document.getElementById('calc-res-mins').textContent = netTotal + ' min';
-    document.getElementById('calc-res-hrs').textContent  = (h > 0 ? h + 'h ' : '') + (mn > 0 ? mn + 'm' : (h > 0 ? '' : '0m'));
-
-  } else {
-    resEl.style.display = 'none';
+// --- MODO ESCURO (DARK MODE) ---
+function initTheme() {
+  if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
   }
 }
-
-function applyCalcMins(){
-  let grossTotal  = 0;
-  let totalDeduct = 0;
-
-  for(const iv of calcIntervals){
-    const s = parseCalcTime(iv.start);
-    const e = parseCalcTime(iv.end);
-    if(s !== null && e !== null && e > s){
-      grossTotal  += e - s;
-      totalDeduct += lunchDeductionForInterval(s, e);
-    }
-  }
-
-  const netTotal = grossTotal - totalDeduct;
-
-  if(netTotal > 0){
-    document.getElementById('f-minutes').value = netTotal;
-    updateCalc();
-
-    const panel = document.getElementById('calc-panel');
-    const btn   = document.getElementById('btn-calc-toggle');
-    panel.style.display = 'none';
-    btn.classList.remove('active');
-
-    const mf = document.getElementById('f-minutes');
-    mf.style.borderColor = 'var(--success)';
-    mf.style.boxShadow = '0 0 0 3px rgba(20, 183, 116, 0.2)';
-    setTimeout(() => { mf.style.borderColor = ''; mf.style.boxShadow = ''; }, 1500);
-
-    const msg = totalDeduct > 0
-      ? netTotal + ' min aplicados (−' + totalDeduct + ' de almoço)'
-      : netTotal + ' minutos aplicados na ficha!';
-    showToast(msg, 'success');
-
-    calcIntervals = [{id:1, start:'', end:''}];
-    calcNextId = 2;
-  }
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
+initTheme();
 
-function renderCalcIntervals(){
-  const c = document.getElementById('calc-intervals-container');
-  c.innerHTML = calcIntervals.map((iv) => `
-    <div class="calc-interval-row">
-      <div class="cif">
-        <label>Entrada</label>
-        <input type="time" value="${iv.start}" oninput="calcIntervals.find(x=>x.id===${iv.id}).start=this.value; recalcIntervals()" placeholder="13:00"/>
-      </div>
-      <div class="cif">
-        <label>Saída</label>
-        <input type="time" value="${iv.end}" oninput="calcIntervals.find(x=>x.id===${iv.id}).end=this.value; recalcIntervals()" placeholder="15:30"/>
-      </div>
-      <button type="button" class="btn-rem-interval" onclick="removeCalcInterval(${iv.id})" ${calcIntervals.length === 1 ? 'disabled' : ''} title="Remover intervalo">✕</button>
-    </div>
-  `).join('');
-  recalcIntervals();
-}
-
-function resetCalcPanel(){
-  calcIntervals = [{id:1, start:'', end:''}];
-  calcNextId = 2;
-  const panel = document.getElementById('calc-panel');
-  if(panel) panel.style.display = 'none';
-  const btn = document.getElementById('btn-calc-toggle');
-  if(btn) btn.classList.remove('active');
-}
-
-// AUTHENTICATION
+// --- AUTENTICAÇÃO ---
 async function signInGoogle() {
-  const { error } = await db.auth.signInWithOAuth({
-    provider:'google',
-    options:{ redirectTo: window.location.origin + window.location.pathname }
-  });
-  if (error) showToast('Falha na autenticação: '+error.message,'error');
+  const { error } = await db.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: window.location.origin + window.location.pathname } });
+  if (error) showToast('Falha no login','error');
 }
 async function signOut(){ await db.auth.signOut(); location.reload(); }
 async function checkRole(uid){
@@ -878,790 +565,224 @@ async function showApp(){
   const meta = currentUser.user_metadata;
   const av = document.getElementById('user-avatar');
   if(meta.avatar_url||meta.picture){ av.src=meta.avatar_url||meta.picture; av.style.display='block'; }
+  
   if(isAdmin){
     document.getElementById('badge-admin').style.display='inline-flex';
-    document.getElementById('btn-periods').style.display='inline-flex';
-    document.getElementById('btn-users').style.display='inline-flex';
-    document.getElementById('btn-report').style.display='inline-flex'; // Novo Botão Relatório
+    document.getElementById('admin-actions').style.display='block';
     document.getElementById('th-user').style.display='table-cell';
     document.getElementById('field-assign').style.display='block';
-    document.getElementById('page-subtitle').textContent='Visão Administrativa (Todos os Lançamentos)';
-  } else {
-    document.getElementById('page-subtitle').textContent='Seus lançamentos individuais';
   }
   await Promise.all([loadPeriods(), loadManagedUsers()]);
   await loadRecords();
   hideLoading();
 }
 
-// DATA LOADING
+// --- CARREGAMENTO DE DADOS ---
 async function loadPeriods(){
   const { data, error } = await db.from('periods').select('*').order('created_at',{ascending:false});
-  if(error){ console.warn('periods:',error.message); return; }
-  allPeriods = data || [];
+  if(!error) allPeriods = data || [];
   
-  // LOGICA DO PRIMEIRO CARREGAMENTO[cite: 1]
   if (isPrimeiroCarregamento && allPeriods.length > 0) {
     selectedPeriodId = allPeriods[0].id;
     isPrimeiroCarregamento = false; 
   }
-
-  renderPeriodPills();
-  populatePeriodDropdown();
-  updateNoPeriodWarning();
+  renderPeriodDropdown();
 }
 
 async function loadRecords(){
   let q = db.from('service_records').select('*').order('created_at',{ascending:false});
   if(!isAdmin) q = q.eq('user_id', currentUser.id);
-  const { data:records, error } = await q;
-  if(error){ showToast('Erro de conexão: '+error.message,'error'); return; }
+  const { data, error } = await q;
+  if(error) return;
 
-  if(isAdmin && records?.length){
-    const uids = [...new Set(records.filter(r=>!r.managed_user_id).map(r=>r.user_id))];
+  allRecords = data || [];
+  if(isAdmin && allRecords.length){
+    const uids = [...new Set(allRecords.filter(r=>!r.managed_user_id).map(r=>r.user_id))];
     if(uids.length){
       const { data:profiles } = await db.from('profiles').select('id,name,email').in('id',uids);
-      const pm={};
-      (profiles||[]).forEach(p=>{ pm[p.id]=p; });
-      records.forEach(r=>{ if(!r.managed_user_id) r.profiles=pm[r.user_id]||null; });
+      const pm={}; (profiles||[]).forEach(p=>pm[p.id]=p);
+      allRecords.forEach(r=>{ if(!r.managed_user_id) r.profiles=pm[r.user_id]||null; });
     }
-    records.forEach(r=>{
-      if(r.managed_user_id) r.managedUser=managedUsers.find(m=>m.id===r.managed_user_id)||null;
-    });
+    allRecords.forEach(r=>{ if(r.managed_user_id) r.managedUser=managedUsers.find(m=>m.id===r.managed_user_id)||null; });
   }
   
-  const periodMap={};
-  allPeriods.forEach(p=>{ periodMap[p.id]=p; });
-  records.forEach(r=>{ r.period=r.period_id ? periodMap[r.period_id]||null : null; });
+  const pMap={}; allPeriods.forEach(p=>pMap[p.id]=p);
+  allRecords.forEach(r=> r.period = pMap[r.period_id]||null);
 
-  allRecords = records || [];
-  const filtered = getFiltered();
-  const q2 = document.getElementById('search-input').value;
-  updateStats(filtered, q2.length>0 || selectedPeriodId!==null);
-  renderList(filtered);
+  updateView();
 }
 
 async function loadManagedUsers(){
-  const { data, error } = await db.from('managed_users').select('*').order('name');
-  if(error){ return; }
+  const { data } = await db.from('managed_users').select('*').order('name');
   managedUsers = data || [];
   populateAssignDropdown();
 }
-
 async function loadAuthProfiles(){
-  const { data } = await db.from('profiles').select('id,name,email,avatar_url,role').order('name');
+  const { data } = await db.from('profiles').select('id,name,email,role').order('name');
   authProfiles = data || [];
-  renderAuthList();
-  populateAssignDropdown();
+  renderAuthList(); populateAssignDropdown();
 }
 
-// RECORD SAVE LOGIC
-async function saveRecord(){
-  const period_id = document.getElementById('f-period').value;
-  const service   = document.getElementById('f-service').value.trim();
-  const minutes   = parseFloat(document.getElementById('f-minutes').value);
-  const rate      = parseFloat(document.getElementById('f-rate').value);
-  const qty       = document.getElementById('f-qty').value.trim();
-  const notes     = document.getElementById('f-notes').value.trim();
-  const assign    = isAdmin ? document.getElementById('f-assign').value : '';
-
-  if(!period_id)         { showToast('Atenção: A competência é obrigatória','error'); return; }
-  if(!service)           { showToast('Atenção: O nome do serviço é obrigatório','error'); return; }
-  if(!minutes||minutes<1){ showToast('Atenção: Lance os minutos gastos (mínimo 1)','error'); return; }
-  if(!rate||rate<=0)     { showToast('Atenção: A taxa não pode ser zero','error'); return; }
-
-  const per = allPeriods.find(p=>p.id===period_id);
-  if(!isAdmin && per?.status==='closed'){ showToast('Operação negada: Competência já foi fechada.','error'); return; }
-
-  const total_value    = minutes * rate;
-  const duration_hours = minutes / 60;
-
-  let user_id = currentUser.id;
-  let managed_user_id = null;
-  if(assign.startsWith('auth:'))    user_id = assign.replace('auth:','');
-  if(assign.startsWith('managed:')) managed_user_id = assign.replace('managed:','');
-
-  const payload = {
-    user_id, managed_user_id, period_id,
-    service_name: service,
-    minutes, minute_rate: rate,
-    hourly_rate: rate * 60,
-    duration_hours, total_value,
-    quantity: qty||null, notes: notes||null,
-    start_datetime: null, end_datetime: null
-  };
-
-  let error;
-  if(editingId) ({ error }=await db.from('service_records').update(payload).eq('id',editingId));
-  else          ({ error }=await db.from('service_records').insert(payload));
-
-  if(error){ showToast('Erro no banco de dados: '+error.message,'error'); return; }
-  showToast(editingId?'Lançamento atualizado com sucesso!':'Serviço lançado na ficha!','success');
-  closeModal('modal-form');
-  await loadRecords();
+// --- RENDENRIZAÇÃO DE INTERFACE ---
+function renderPeriodDropdown() {
+  const sel = document.getElementById('header-period-select');
+  sel.innerHTML = '<option value="">Todas as competências</option>';
+  allPeriods.forEach(p => {
+    sel.innerHTML += `<option value="${p.id}" ${p.id === selectedPeriodId ? 'selected' : ''}>${esc(p.name)}</option>`;
+  });
 }
 
-async function confirmDelete(){
-  const { error } = await db.from('service_records').delete().eq('id',deletingId);
-  if(error){ showToast('Erro de exclusão: '+error.message,'error'); return; }
-  showToast('Lançamento excluído da base.','success');
-  closeModal('modal-confirm');
-  await loadRecords();
+function selectPeriod(id) {
+  selectedPeriodId = id || null;
+  updateView();
 }
 
-// PERIODS CRUD
-async function createPeriod(){
-  const name = document.getElementById('per-name').value.trim();
-  const desc = document.getElementById('per-desc').value.trim();
-  if(!name){ showToast('O nome do período é obrigatório','error'); return; }
-  const { error } = await db.from('periods').insert({ name, description:desc||null, created_by:currentUser.id });
-  if(error){ showToast('Erro no cadastro: '+error.message,'error'); return; }
-  showToast('Competência aberta com sucesso!','success');
-  document.getElementById('per-name').value='';
-  document.getElementById('per-desc').value='';
-  await loadPeriods();
-  renderPeriodsList();
+function syncSearch(val) {
+  document.getElementById('search-input').value = val;
+  onSearch();
 }
 
-function openClosePeriod(id){ closingPeriodId=id; openModal('modal-close-period'); }
-
-async function confirmClosePeriod(){
-  const { error } = await db.from('periods').update({ status:'closed', closed_at:new Date().toISOString() }).eq('id',closingPeriodId);
-  if(error){ showToast('Erro na atualização: '+error.message,'error'); return; }
-  showToast('Competência bloqueada/fechada.','success');
-  closeModal('modal-close-period');
-  await loadPeriods();
-  renderPeriodsList();
-  await loadRecords();
-}
-
-async function deletePeriod(id){
-  const { error } = await db.from('periods').delete().eq('id',id);
-  if(error){ showToast('Ação bloqueada (verifique as dependências): '+error.message,'error'); return; }
-  showToast('Competência apagada da base.','success');
-  if(selectedPeriodId===id){ selectedPeriodId=null; }
-  await loadPeriods();
-  renderPeriodsList();
-  await loadRecords();
-}
-
-// MANAGED USERS CRUD
-async function createManagedUser(){
-  const name=document.getElementById('mu-name').value.trim();
-  const desc=document.getElementById('mu-desc').value.trim();
-  if(!name){ showToast('O nome é campo obrigatório','error'); return; }
-  const { error }=await db.from('managed_users').insert({ name, description:desc||null });
-  if(error){ showToast('Erro no cadastro: '+error.message,'error'); return; }
-  showToast('Perfil de indicador gerado!','success');
-  document.getElementById('mu-name').value='';
-  document.getElementById('mu-desc').value='';
-  await loadManagedUsers();
-  renderManagedList();
-}
-async function deleteManagedUser(id){ deletingMUId=id; openModal('modal-confirm-mu'); }
-async function confirmDeleteMU(){
-  const { error }=await db.from('managed_users').delete().eq('id',deletingMUId);
-  if(error){ showToast('Erro de exclusão: '+error.message,'error'); return; }
-  showToast('Perfil desvinculado com sucesso.','success');
-  closeModal('modal-confirm-mu');
-  await loadManagedUsers();
-  renderManagedList();
-  await loadRecords();
-}
-
-// RENDER & FILTERING
-function getDisplayName(r){
-  if(r.managedUser) return { name:r.managedUser.name, type:'managed' };
-  if(r.profiles)    return { name:r.profiles.name||r.profiles.email, type:'auth' };
-  return { name:'—', type:'auth' };
-}
-
-function getRecordMinutes(r){
-  if(r.minutes!=null) return r.minutes;
-  if(r.start_datetime && r.end_datetime){
-    return (new Date(r.end_datetime)-new Date(r.start_datetime))/60000;
-  }
-  if(r.duration_hours) return r.duration_hours*60;
-  return null;
-}
-
-function getRecordRate(r){
-  if(r.minute_rate!=null) return r.minute_rate;
-  if(r.hourly_rate!=null) return r.hourly_rate/60;
-  return null;
-}
+function onSearch(){ updateView(); }
+function clearSearch(){ document.getElementById('search-input').value=''; document.getElementById('global-search').value=''; updateView(); }
 
 function getFiltered(){
   const q = document.getElementById('search-input').value.toLowerCase().trim();
   let data = allRecords;
   if(selectedPeriodId) data = data.filter(r=>r.period_id===selectedPeriodId);
   if(q) data = data.filter(r=>{
-    const dn = getDisplayName(r).name.toLowerCase();
-    const notesStr = (r.notes||'').toLowerCase();
-    return r.service_name.toLowerCase().includes(q) || dn.includes(q) || notesStr.includes(q);
+    const n = (r.managedUser?.name || r.profiles?.name || r.profiles?.email || '').toLowerCase();
+    return r.service_name.toLowerCase().includes(q) || n.includes(q) || (r.notes||'').toLowerCase().includes(q);
   });
   return data;
 }
 
-function selectPeriod(id){
-  selectedPeriodId = id;
-  renderPeriodPills();
-  const filtered = getFiltered();
-  const q = document.getElementById('search-input').value;
-  updateStats(filtered, q.length>0||id!==null);
-  renderList(filtered);
-}
+function updateView() {
+  const data = getFiltered();
+  
+  // Atualiza Totais
+  const mins = data.reduce((s,r)=>s+(r.minutes||0),0);
+  const val  = data.reduce((s,r)=>s+(r.total_value||0),0);
+  
+  document.getElementById('stat-total').textContent = data.length;
+  document.getElementById('stat-mins').textContent = formatMins(mins);
+  document.getElementById('stat-value').textContent = fmtCurrency(val);
+  
+  document.getElementById('filter-status').textContent = document.getElementById('search-input').value ? 'Situação: Filtrado' : 'Situação: Todos';
 
-function renderPeriodPills(){
-  const row = document.getElementById('periods-row');
-  const none = !selectedPeriodId;
-  let h = '';
-  h += `<button class="period-pill${none?' active':''}" onclick="selectPeriod(null)">Todos os Registros</button>`;
-  allPeriods.forEach(p=>{
-    const active = selectedPeriodId===p.id;
-    const sc = p.status==='open'?'open':'closed';
-    h += `<button class="period-pill${active?' active':''}" onclick="selectPeriod('${p.id}')">
-      <span class="period-dot ${sc}"></span>${esc(p.name)}
-    </button>`;
-  });
-  if(isAdmin){
-    h += `<button class="period-pill pill-add" onclick="openPeriodsModal()">⚙️ Configurar</button>`;
-  }
-  row.innerHTML = h;
-}
-
-function renderPeriodsList(){
-  const el = document.getElementById('periods-list');
-  if(!allPeriods.length){
-    el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;background:#f8fafc;border-radius:8px">Base vazia. Cadastre a primeira competência.</div>';
-    return;
-  }
-  el.innerHTML = allPeriods.map(p=>{
-    const isOpen = p.status==='open';
-    const date   = new Date(p.created_at).toLocaleDateString('pt-BR');
-    return `<div class="period-list-item">
-      <div class="period-list-info">
-        <div class="period-list-name">${esc(p.name)}</div>
-        <div class="period-list-sub">${esc(p.description||'Lançado em '+date)}</div>
-      </div>
-      <span class="status-pill ${isOpen?'status-open':'status-closed'}">${isOpen?'● Ativo':'✓ Bloqueado'}</span>
-      ${isOpen?`<button class="btn-warning" onclick="openClosePeriod('${p.id}')">🔒 Fechar</button>`:''}
-      <button class="btn-icon del" onclick="deletePeriod('${p.id}')" title="Excluir base">🗑</button>
-    </div>`;
-  }).join('');
-}
-
-function onSearch(){
-  const q = document.getElementById('search-input').value;
-  document.getElementById('search-clear').classList.toggle('visible', q.length>0);
-  const filtered = getFiltered();
-  updateStats(filtered, q.length>0||selectedPeriodId!==null);
-  renderList(filtered);
-}
-
-function clearSearch(){
-  document.getElementById('search-input').value='';
-  document.getElementById('search-clear').classList.remove('visible');
-  const filtered = getFiltered();
-  updateStats(filtered, selectedPeriodId!==null);
-  renderList(filtered);
-}
-
-function renderList(filtered){
-  filtered = filtered||getFiltered();
-  renderTable(filtered);
-  renderCards(filtered);
-}
-
-function renderTable(filtered){
+  // Renderiza Tabela
   const tbody = document.getElementById('table-body');
-  if(!filtered.length){
-    tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="icon">📋</div><p>Nenhum lançamento corresponde ao filtro</p></div></td></tr>`;
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--muted)">Nenhum registro encontrado.</td></tr>`;
     return;
   }
-  tbody.innerHTML = filtered.map(r=>{
-    const mins = getRecordMinutes(r);
-    const rate = getRecordRate(r);
-    const { name:un, type:utype } = getDisplayName(r);
-    const chipCls = utype==='managed'?'user-chip managed-chip':'user-chip';
-    const chipIco = utype==='managed'?'👤':'🔑';
-    const pName   = r.period?.name||'—';
-    const pStatus = r.period?.status||'';
+  
+  tbody.innerHTML = data.map(r=>{
+    const uName = r.managedUser?.name || r.profiles?.name || r.profiles?.email || '—';
+    const isMng = r.managed_user_id ? ' (Ind)' : '';
+    const pSt   = r.period?.status === 'open' ? 'status-open' : 'status-closed';
+    const pName = r.period?.name || '—';
+    
     return `<tr>
+      <td class="cb-cell"><input type="checkbox"></td>
       <td>
-        <div class="service-name">${esc(r.service_name)}${r.quantity?`<span class="qty-badge">📦 ${esc(r.quantity)}</span>`:''}</div>
-        ${r.notes?`<div style="font-size:12px;color:var(--muted)">${esc(r.notes.substring(0,40))}${r.notes.length>40?'…':''}</div>`:''}
+        <div class="service-desc">${esc(r.service_name)} <span class="copy-icon" title="Copiar">📋</span></div>
+        ${r.quantity ? `<div class="notes-sub">Qtd: ${esc(r.quantity)}</div>` : ''}
+        ${r.notes ? `<div class="notes-sub">${esc(r.notes)}</div>` : ''}
       </td>
-      ${isAdmin?`<td><span class="${chipCls}">${chipIco} ${esc(un)}</span></td>`:''}
-      <td><span class="period-chip ${pStatus}">${esc(pName)}</span></td>
-      <td><span class="min-pill">⏱ ${mins!=null?formatMins(mins):'—'}</span></td>
-      <td style="color:var(--muted)">${rate!=null?fmtCurrency(rate)+'/min':'—'}</td>
-      <td class="value-text">${fmtCurrency(r.total_value)}</td>
-      <td><div class="actions">
-        <button class="btn-icon edit" onclick="openEditModal('${r.id}')" title="Editar">✏️</button>
-        <button class="btn-icon del"  onclick="openDeleteModal('${r.id}')" title="Excluir">🗑</button>
-      </div></td>
+      ${isAdmin ? `<td><span style="font-size:12px;color:var(--text)">${esc(uName)}${isMng}</span></td>` : ''}
+      <td><span class="status-pill ${pSt}">${esc(pName)}</span></td>
+      <td>${formatMins(r.minutes)}</td>
+      <td><span class="val-green">${fmtCurrency(r.minute_rate)}</span></td>
+      <td style="font-weight:600; color:var(--text-dark);">${fmtCurrency(r.total_value)}</td>
+      <td class="actions-cell">
+        <button class="btn-row-action" onclick="openEditModal('${r.id}')">✏️</button>
+        <button class="btn-row-action danger" onclick="openDeleteModal('${r.id}')">🗑️</button>
+      </td>
     </tr>`;
   }).join('');
 }
 
-function renderCards(filtered){
-  const el = document.getElementById('cards-list');
-  if(!filtered.length){
-    const q=document.getElementById('search-input').value;
-    el.innerHTML=`<div class="empty-state"><div class="icon">🔍</div><p>${q?'Zero resultados para "'+esc(q)+'"':'Tabela vazia.\nToque no botão + para adicionar.'}</p></div>`;
-    return;
-  }
-  el.innerHTML = filtered.map((r,i)=>{
-    const mins = getRecordMinutes(r);
-    const rate = getRecordRate(r);
-    const { name:un, type:utype } = getDisplayName(r);
-    const uCls  = utype==='managed'?'rec-card-user managed':'rec-card-user';
-    const uIco  = utype==='managed'?'👤':'🔑';
-    const pName = r.period?.name||'—';
-    const pSt   = r.period?.status||'';
-    
-    let adminHeader = '';
-    if (isAdmin) {
-        let badgeStyle = `display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border:1px solid var(--border);padding:4px 8px;border-radius:12px;font-size:11px;font-weight:500;color:var(--text-dark);`;
-        if (utype==='managed') badgeStyle += `background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.2);color:#2563eb;`;
-        adminHeader = `<span class="${uCls}" style="${badgeStyle}">${uIco} ${esc(un)}</span>`;
-    }
-    
-    return `<div class="rec-card" style="animation-delay:${i*.04}s">
-      <div class="rec-card-header">
-        ${adminHeader}
-        <span class="period-chip ${pSt}" style="font-size:11px">${esc(pName)}</span>
-      </div>
-      <div class="rec-card-top">
-        <div>
-          <div class="rec-card-name">${esc(r.service_name)}</div>
-          ${r.quantity?`<div class="rec-card-note" style="color:var(--text-dark);font-weight:500;margin-top:6px;">📦 ${esc(r.quantity)}</div>`:''}
-          ${r.notes?`<div class="rec-card-note">${esc(r.notes.substring(0,60))}${r.notes.length>60?'…':''}</div>`:''}
-        </div>
-        <div class="rec-card-actions">
-          <button class="btn-icon edit" onclick="openEditModal('${r.id}')">✏️</button>
-          <button class="btn-icon del"  onclick="openDeleteModal('${r.id}')">🗑</button>
-        </div>
-      </div>
-      <div class="rec-card-grid">
-        <div class="rec-info-item"><div class="lbl">Tempo</div><div class="val green">⏱ ${mins!=null?formatMins(mins):'—'}</div></div>
-        <div class="rec-info-item"><div class="lbl">Custo</div><div class="val">${rate!=null?fmtCurrency(rate):'—'}/min</div></div>
-        <div class="rec-info-item" style="grid-column:1/-1;background:#f8fafc;padding:12px;border-radius:6px;border:1px solid var(--border);"><div class="lbl">Fechamento Bruto</div><div class="val accent">${fmtCurrency(r.total_value)}</div></div>
-      </div>
-    </div>`;
-  }).join('');
+// --- CRUD REGISTROS ---
+async function saveRecord(){
+  const period_id = document.getElementById('f-period').value;
+  const service   = document.getElementById('f-service').value.trim();
+  const minutes   = parseFloat(document.getElementById('f-minutes').value);
+  const rate      = parseFloat(document.getElementById('f-rate').value);
+  const assign    = isAdmin ? document.getElementById('f-assign').value : '';
+
+  if(!period_id || !service || !minutes || !rate) return showToast('Preencha os campos obrigatórios','error');
+
+  let user_id = currentUser.id;
+  let managed_user_id = null;
+  if(assign.startsWith('auth:')) user_id = assign.replace('auth:','');
+  if(assign.startsWith('managed:')) managed_user_id = assign.replace('managed:','');
+
+  const payload = {
+    user_id, managed_user_id, period_id, service_name: service,
+    minutes, minute_rate: rate, total_value: minutes * rate,
+    quantity: document.getElementById('f-qty').value||null, 
+    notes: document.getElementById('f-notes').value||null
+  };
+
+  if(editingId) await db.from('service_records').update(payload).eq('id',editingId);
+  else await db.from('service_records').insert(payload);
+
+  closeModal('modal-form'); await loadRecords(); showToast('Salvo com sucesso');
 }
 
-function parseQtyText(text){
-  if(!text||!text.trim()) return null;
-  const m=text.trim().match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
-  if(m) return { num:parseFloat(m[1].replace(',','.')), unit:(m[2].trim()||'un').toLowerCase() };
-  return { num:null, unit:text.trim().toLowerCase() };
-}
-function buildQtySummary(data){
-  const groups={};let hasAny=false;
-  data.forEach(r=>{
-    if(!r.quantity) return; hasAny=true;
-    const p=parseQtyText(r.quantity); if(!p) return;
-    if(p.num!==null) groups[p.unit]=(groups[p.unit]||0)+p.num;
-    else groups[p.unit]=(groups[p.unit]||0)+1;
-  });
-  if(!hasAny) return null;
-  return Object.entries(groups).map(([u,t])=>{
-    const n=Number.isInteger(t)?t:t.toFixed(2).replace('.',',');
-    return `${n} ${u}`;
-  }).join(' · ')||null;
+async function confirmDelete(){
+  await db.from('service_records').delete().eq('id',deletingId);
+  closeModal('modal-confirm'); await loadRecords(); showToast('Registro excluído');
 }
 
-function updateStats(data, isFiltered){
-  data = data||allRecords;
-  const n    = data.length;
-  const mins = data.reduce((s,r)=>s+(getRecordMinutes(r)||0),0);
-  const v    = data.reduce((s,r)=>s+(r.total_value||0),0);
-  document.getElementById('stat-total').textContent = n;
-  document.getElementById('stat-mins').textContent  = formatMins(mins);
-  document.getElementById('stat-value').textContent = fmtCurrency(v);
-
-  const qtySummary = isFiltered ? buildQtySummary(data) : null;
-  const scQty = document.getElementById('sc-qty');
-  if(isFiltered && qtySummary){
-    scQty.style.display='flex'; scQty.style.flexDirection='column';
-    const parts = qtySummary.split(' · ');
-    const qEl = document.getElementById('stat-qty');
-    if(parts.length>1){ qEl.textContent=parts.join('\n'); qEl.style.whiteSpace='pre-line'; qEl.style.fontSize='1rem'; }
-    else { qEl.textContent=qtySummary; qEl.style.whiteSpace=''; qEl.style.fontSize=''; }
-    document.getElementById('stat-qty-sub').textContent='nos resultados';
-  } else { scQty.style.display='none'; }
-
-  ['sc-total','sc-mins','sc-value'].forEach(id=>{
-    const el=document.getElementById(id);
-    el.classList.toggle('filtered',!!isFiltered);
-    const badge=el.querySelector('.stat-filter-badge');
-    if(isFiltered&&!badge){ const b=document.createElement('div'); b.className='stat-filter-badge'; b.textContent='FILTRO ATIVO'; el.appendChild(b); }
-    else if(!isFiltered&&badge){ badge.remove(); }
-  });
-  document.getElementById('stat-total-sub').textContent = isFiltered?'linhas localizadas':'fichas emitidas';
-  document.getElementById('stat-mins-sub').textContent  = isFiltered?'cálculo parcial':'soma da base';
+// --- OUTROS ---
+function updateCalc(){
+  const m = parseFloat(document.getElementById('f-minutes').value) || 0;
+  const r = parseFloat(document.getElementById('f-rate').value) || 0;
+  document.getElementById('cf-total').textContent = fmtCurrency(m * r);
 }
 
-function updateNoPeriodWarning(){
-  const hasOpen = allPeriods.some(p=>p.status==='open');
-  document.getElementById('no-period-alert').style.display = hasOpen?'none':'flex';
-}
-
-// MODALS CONTROL
 function openAddModal(){
-  editingId=null;
-  document.getElementById('modal-title').textContent='Emitir Apontamento';
-  clearForm();
-  if(selectedPeriodId){
-    const per=allPeriods.find(p=>p.id===selectedPeriodId);
-    if(per){ document.getElementById('f-period').value=selectedPeriodId; updatePeriodWarning(); }
-  }
-  openModal('modal-form');
+  editingId=null; document.getElementById('modal-title').textContent='Incluir Lançamento';
+  ['f-service','f-minutes','f-rate','f-qty','f-notes','f-assign'].forEach(i=>{if(document.getElementById(i))document.getElementById(i).value=''});
+  
+  const pf = document.getElementById('f-period');
+  pf.innerHTML = '<option value="">— Selecione —</option>' + allPeriods.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  if(selectedPeriodId) pf.value = selectedPeriodId;
+  
+  updateCalc(); openModal('modal-form');
 }
 
 function openEditModal(id){
-  const r=allRecords.find(x=>x.id===id); if(!r) return;
-  editingId=id;
-  document.getElementById('modal-title').textContent='Revisar Lançamento';
+  const r = allRecords.find(x=>x.id===id); if(!r) return;
+  editingId = id; openAddModal();
+  document.getElementById('modal-title').textContent='Editar Lançamento';
   document.getElementById('f-service').value = r.service_name;
-  document.getElementById('f-minutes').value = getRecordMinutes(r)||'';
-  document.getElementById('f-rate').value    = getRecordRate(r)||'';
-  document.getElementById('f-qty').value     = r.quantity||'';
-  document.getElementById('f-notes').value   = r.notes||'';
-  document.getElementById('f-period').value  = r.period_id||'';
-  if(isAdmin){
-    const sel=document.getElementById('f-assign');
-    if(r.managed_user_id)                sel.value='managed:'+r.managed_user_id;
-    else if(r.user_id!==currentUser.id)  sel.value='auth:'+r.user_id;
-    else                                  sel.value='';
-  }
-  updateCalc(); updatePeriodWarning();
-  openModal('modal-form');
+  document.getElementById('f-minutes').value = r.minutes;
+  document.getElementById('f-rate').value = r.minute_rate;
+  document.getElementById('f-qty').value = r.quantity||'';
+  document.getElementById('f-notes').value = r.notes||'';
+  document.getElementById('f-period').value = r.period_id;
+  if(isAdmin) document.getElementById('f-assign').value = r.managed_user_id ? 'managed:'+r.managed_user_id : (r.user_id !== currentUser.id ? 'auth:'+r.user_id : '');
+  updateCalc();
 }
 
 function openDeleteModal(id){ deletingId=id; openModal('modal-confirm'); }
-async function openPeriodsModal(){ renderPeriodsList(); openModal('modal-periods'); }
-async function openUsersModal(){ renderManagedList(); openModal('modal-users'); await loadAuthProfiles(); }
+function openPeriodsModal(){ openModal('modal-periods'); }
+function openUsersModal(){ openModal('modal-users'); loadAuthProfiles(); }
+function openReportModal(){ openModal('modal-report'); }
+
 function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
 function closeOnOverlay(e,id){ if(e.target.id===id) closeModal(id); }
-
-function clearForm(){
-  ['f-service','f-minutes','f-rate','f-qty','f-notes'].forEach(i=>document.getElementById(i).value='');
-  if(isAdmin) document.getElementById('f-assign').value='';
-  document.getElementById('f-period').value='';
-  document.getElementById('cf-min').textContent='— min';
-  document.getElementById('cf-rate').textContent='R$ —';
-  document.getElementById('cf-total').textContent='—';
-  document.getElementById('cf-dur').textContent='Aguardando os dados da ficha';
-  document.getElementById('period-closed-warn').style.display='none';
-  resetCalcPanel();
-}
-
-function populatePeriodDropdown(){
-  const sel = document.getElementById('f-period');
-  const cur = sel.value;
-  sel.innerHTML='<option value="">— Selecionar competência de registro —</option>';
-  const open   = allPeriods.filter(p=>p.status==='open');
-  const closed = allPeriods.filter(p=>p.status==='closed');
-  if(open.length){
-    const og=document.createElement('optgroup'); og.label='● Em andamento (Ativos)';
-    open.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; og.appendChild(o); });
-    sel.appendChild(og);
-  }
-  if(closed.length&&isAdmin){
-    const og=document.createElement('optgroup'); og.label='✓ Bloqueados (Fechados)';
-    closed.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name+' (Fechado)'; og.appendChild(o); });
-    sel.appendChild(og);
-  }
-  if(cur) sel.value=cur;
-}
-
-function updatePeriodWarning(){
-  const pid = document.getElementById('f-period').value;
-  const per = allPeriods.find(p=>p.id===pid);
-  const warn = document.getElementById('period-closed-warn');
-  warn.style.display = (per&&per.status==='closed') ? 'block' : 'none';
-}
-
-function populateAssignDropdown(){
-  const sel=document.getElementById('f-assign');
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— Manter na minha ficha pessoal —</option>';
-  if(authProfiles.length){
-    const og=document.createElement('optgroup'); og.label='🔑 Registros via Autenticação';
-    authProfiles.forEach(p=>{ const o=document.createElement('option'); o.value='auth:'+p.id; o.textContent=p.name||p.email; og.appendChild(o); });
-    sel.appendChild(og);
-  }
-  if(managedUsers.length){
-    const og=document.createElement('optgroup'); og.label='👤 Fichas de Indicadores Internos';
-    managedUsers.forEach(m=>{ const o=document.createElement('option'); o.value='managed:'+m.id; o.textContent=m.name+(m.description?' ('+m.description+')':''); og.appendChild(o); });
-    sel.appendChild(og);
-  }
-  if(cur) sel.value=cur;
-}
-
-function renderManagedList(){
-  const el=document.getElementById('managed-list');
-  if(!managedUsers.length){ el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;background:#f8fafc;border-radius:8px">Nenhum perfil indicador salvo.</div>'; return; }
-  el.innerHTML=managedUsers.map(m=>`
-    <div class="user-list-item">
-      <div class="user-list-avatar">👤</div>
-      <div class="user-list-info"><div class="user-list-name">${esc(m.name)}</div><div class="user-list-sub">${esc(m.description||'Sem detalhamento funcional')}</div></div>
-      <span class="status-pill status-closed" style="color:#2563eb;background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.2)">INDICADOR</span>
-      <button class="btn-icon del" onclick="deleteManagedUser('${m.id}')" style="flex-shrink:0">🗑</button>
-    </div>`).join('');
-}
-
-function renderAuthList(){
-  const el=document.getElementById('auth-list');
-  if(!authProfiles.length){ el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;background:#f8fafc;border-radius:8px">Módulo em configuração.</div>'; return; }
-  el.innerHTML=authProfiles.map(p=>`
-    <div class="user-list-item">
-      <div class="user-list-avatar">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:'🔑'}</div>
-      <div class="user-list-info"><div class="user-list-name">${esc(p.name||'Acesso Genérico')}</div><div class="user-list-sub">${esc(p.email||'—')}</div></div>
-      <span class="status-pill ${p.role==='admin'?'status-open':'status-closed'}">${p.role==='admin'?'ADMINISTRADOR':'USUÁRIO BASE'}</span>
-    </div>`).join('');
-  populateAssignDropdown();
-}
-
-function switchTab(tabId,e){
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  e.target.classList.add('active');
-}
-
-// ── ROTINAS DO RELATÓRIO PARA IMPRESSÃO ──
-async function openReportModal() {
-  if (authProfiles.length === 0) { await loadAuthProfiles(); }
-
-  const sel = document.getElementById('rep-period');
-  sel.innerHTML = '<option value="">— Selecione uma competência de base —</option>';
-  allPeriods.forEach(p => {
-     sel.innerHTML += `<option value="${p.id}">${esc(p.name)}</option>`;
-  });
-
-  const uList = document.getElementById('rep-users-list');
-  let html = '';
-  const addCheckbox = (id, name, isManaged) => {
-    html += `<label style="display:flex; align-items:center; gap:10px; margin-bottom:12px; cursor:pointer; padding:6px; background:#f8fafc; border-radius:6px;">
-       <input type="checkbox" class="rep-u-cb" value="${isManaged ? 'managed:' : 'auth:'}${id}" checked style="width:16px;height:16px;accent-color:var(--accent);">
-       <span style="font-size:14px;font-weight:500;color:var(--text-dark);">${esc(name)} ${isManaged ? '<span style="color:var(--muted);font-size:11px;font-weight:400;margin-left:4px">(Perfil Indicador)</span>' : ''}</span>
-    </label>`;
-  };
-
-  authProfiles.forEach(p => addCheckbox(p.id, p.name || p.email, false));
-  managedUsers.forEach(m => addCheckbox(m.id, m.name, true));
-
-  uList.innerHTML = html;
-  document.getElementById('rep-all-users').checked = true;
-
-  openModal('modal-report');
-}
-
-function toggleAllRepUsers() {
-  const isChecked = document.getElementById('rep-all-users').checked;
-  document.querySelectorAll('.rep-u-cb').forEach(cb => cb.checked = isChecked);
-}
-
-function generateReport() {
-  const periodId = document.getElementById('rep-period').value;
-  if (!periodId) { showToast('Erro: Selecione a competência a ser impressa.', 'error'); return; }
-
-  const period = allPeriods.find(p => p.id === periodId);
-  const selectedUsers = Array.from(document.querySelectorAll('.rep-u-cb:checked')).map(cb => cb.value);
-  
-  if (selectedUsers.length === 0) { showToast('Erro: Selecione profissionais para a emissão.', 'error'); return; }
-
-  const reportData = allRecords.filter(r => {
-    if (r.period_id !== periodId) return false;
-    let uKey = r.managed_user_id ? 'managed:' + r.managed_user_id : 'auth:' + r.user_id;
-    return selectedUsers.includes(uKey);
-  });
-
-  if (reportData.length === 0) {
-    showToast('Aviso: Não existem transações correspondentes a este filtro para compor o PDF.', 'error');
-    return;
-  }
-
-  const grouped = {};
-  let grandTotal = 0;
-  let grandMins = 0;
-
-  reportData.forEach(r => {
-    let uKey = r.managed_user_id ? 'managed:' + r.managed_user_id : 'auth:' + r.user_id;
-    const { name } = getDisplayName(r);
-
-    if (!grouped[uKey]) { grouped[uKey] = { name, records: [], total: 0, mins: 0 }; }
-    grouped[uKey].records.push(r);
-    grouped[uKey].total += r.total_value || 0;
-    const mins = getRecordMinutes(r) || 0;
-    grouped[uKey].mins += mins;
-    
-    grandTotal += r.total_value || 0;
-    grandMins += mins;
-  });
-
-  // GERAÇÃO DO HTML (Formatação Bling limpa para impressoras)
-  let printHtml = `
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-      <meta charset="UTF-8">
-      <title>Fechamento de Sistema - ${esc(period.name)}</title>
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; max-width: 1000px; margin: 0 auto; background: #fff; line-height: 1.5; }
-        .doc-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 32px; }
-        .doc-header h1 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 700; letter-spacing: -0.5px; }
-        .doc-header h2 { margin: 8px 0 0; font-size: 15px; color: #64748b; font-weight: 500; }
-        .doc-header .stamp { text-align: right; font-size: 12px; color: #94a3b8; }
-        
-        h3 { margin-top: 40px; margin-bottom: 16px; font-size: 16px; color: #0f172a; display: flex; align-items: center; gap: 8px; }
-        h3 span { display: inline-block; background: #f1f5f9; padding: 4px 12px; border-radius: 4px; border: 1px solid #e2e8f0; }
-        
-        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
-        th, td { border-bottom: 1px solid #e2e8f0; padding: 12px 10px; text-align: left; }
-        th { background: #f8fafc; font-weight: 600; color: #64748b; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-        tr:nth-child(even) { background-color: #fafbfc; }
-        
-        .text-right { text-align: right; }
-        .notes { font-size: 11px; color: #64748b; margin-top: 4px; display: block; }
-        .qty-span { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; color: #475569; }
-        
-        .subtotal-row td { background: #f8fafc; border-top: 2px solid #e2e8f0; font-weight: 700; color: #0f172a; font-size: 14px; }
-        
-        .summary { background: #f8fafc; border: 1px solid #e2e8f0; padding: 24px; margin-top: 48px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .summary-label { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-totals { display: flex; gap: 32px; }
-        .sum-box { text-align: right; }
-        .sum-box .sb-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; }
-        .sum-box .sb-val { font-size: 20px; font-weight: 700; color: #14B774; letter-spacing: -0.5px; }
-        
-        .btn-print { display: block; margin: 0 auto 30px; padding: 12px 24px; background: #14B774; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px rgba(20, 183, 116, 0.2); }
-        .btn-print:hover { background: #0E945D; }
-        @media print { .btn-print { display: none; } body { padding: 0; } }
-      </style>
-    </head>
-    <body>
-      <button class="btn-print" onclick="window.print()">🖨️ Disparar Impressora PDF</button>
-      
-      <div class="doc-header">
-        <div>
-          <h1>Relatório de Lançamentos do Sistema</h1>
-          <h2>Competência Referência: <strong>${esc(period.name)}</strong></h2>
-        </div>
-        <div class="stamp">
-          Emitido em:<br>
-          <strong>${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</strong>
-        </div>
-      </div>
-  `;
-
-  Object.values(grouped).forEach(g => {
-    printHtml += `
-      <h3><span>👤 ${esc(g.name)}</span></h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Memorial de Serviço</th>
-            <th class="text-right">R$/min</th>
-            <th class="text-right">Duração Apurada</th>
-            <th class="text-right">Conversão Final</th>
-          </tr>
-        </thead>
-        <tbody>
-    `;
-
-    g.records.forEach(r => {
-      const m = getRecordMinutes(r);
-      const rate = getRecordRate(r);
-      printHtml += `
-        <tr>
-          <td>
-            <strong>${esc(r.service_name)}</strong> ${r.quantity ? `<span class="qty-span">Caixa/Qtd: ${esc(r.quantity)}</span>` : ''}
-            ${r.notes ? `<span class="notes">Obs: ${esc(r.notes)}</span>` : ''}
-          </td>
-          <td class="text-right">${rate != null ? fmtCurrency(rate) : '—'}</td>
-          <td class="text-right">${m != null ? formatMins(m) : '—'}</td>
-          <td class="text-right" style="font-weight:600; color: #0f172a;">${fmtCurrency(r.total_value)}</td>
-        </tr>
-      `;
-    });
-
-    printHtml += `
-        </tbody>
-        <tfoot>
-          <tr class="subtotal-row">
-            <td colspan="2" class="text-right" style="text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; color: #64748b;">Subtotal do Colaborador</td>
-            <td class="text-right">${formatMins(g.mins)}</td>
-            <td class="text-right" style="color: #14B774;">${fmtCurrency(g.total)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    `;
-  });
-
-  printHtml += `
-      <div class="summary">
-        <div class="summary-label">Resumo Consolidado<br>dessa Ficha</div>
-        <div class="summary-totals">
-          <div class="sum-box"><div class="sb-lbl">Tempo Líquido</div><div class="sb-val" style="color:#0f172a">${formatMins(grandMins)}</div></div>
-          <div class="sum-box"><div class="sb-lbl">Valor Bruto Final</div><div class="sb-val">${fmtCurrency(grandTotal)}</div></div>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(printHtml);
-  printWindow.document.close();
-  closeModal('modal-report');
-  setTimeout(() => { printWindow.print(); }, 600);
-}
-
-// MATH & FORMATTING
-function updateCalc(){
-  const m = parseFloat(document.getElementById('f-minutes').value);
-  const r = parseFloat(document.getElementById('f-rate').value);
-  if(m>0 && r>0){
-    const total = m * r;
-    document.getElementById('cf-min').textContent   = formatMins(m);
-    document.getElementById('cf-rate').textContent  = fmtCurrency(r)+'/min';
-    document.getElementById('cf-total').textContent = fmtCurrency(total);
-    const h=Math.floor(m/60), mn=Math.round(m%60);
-    document.getElementById('cf-dur').textContent = `Volume equivalente: ${h>0?h+'h ':''} ${mn}m totais`;
-  } else {
-    document.getElementById('cf-min').textContent='— min';
-    document.getElementById('cf-rate').textContent='R$ —';
-    document.getElementById('cf-total').textContent='—';
-    document.getElementById('cf-dur').textContent='Aguardando preenchimento no formulário';
-  }
-}
+function switchTab(id,e){ document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById(id).classList.add('active'); e.target.classList.add('active'); }
 
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-function formatMins(m){
-  if(m==null) return '—';
-  const h=Math.floor(m/60), mn=Math.round(m%60);
-  if(h>0 && mn>0) return `${h}h ${mn}m`;
-  if(h>0)         return `${h}h`;
-  return `${mn}m`;
-}
-const fmtCurrency = v => (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:4});
-
+function formatMins(m){ if(!m) return '—'; const h=Math.floor(m/60), mn=Math.round(m%60); return h>0 ? `${h}h ${mn}m` : `${mn}m`; }
+const fmtCurrency = v => (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2});
 function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function hideLoading(){ document.getElementById('loading-overlay').classList.add('hidden'); }
-function showToast(msg,type='success'){
-  const c=document.getElementById('toast-container'),t=document.createElement('div');
-  t.className='toast '+type;
-  t.innerHTML='<span style="font-size:18px">'+(type==='success'?'✅':'❌')+'</span>'+msg;
-  c.appendChild(t); setTimeout(()=>t.remove(),4000);
-}
+function showToast(msg,type='success'){ const c=document.getElementById('toast-container'),t=document.createElement('div'); t.className='toast '+type; t.innerHTML=msg; c.appendChild(t); setTimeout(()=>t.remove(),3000); }
 
 init();
 </script>
