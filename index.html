@@ -525,18 +525,150 @@ let authProfiles   = [];
 let selectedPeriodId  = null;
 let editingId         = null;
 let deletingId        = null;
+let deletingMUId      = null;
+let closingPeriodId   = null;
 let isPrimeiroCarregamento = true; 
 
-// --- MODO ESCURO (DARK MODE) ---
-function initTheme() {
-  if (localStorage.getItem('theme') === 'dark') {
-    document.body.classList.add('dark-mode');
+// --- CALCULADORA DE TEMPO ---
+let calcIntervals = [{id:1, start:'', end:''}];
+let calcNextId    = 2;
+const LUNCH_START = 12 * 60; // 12:00
+const LUNCH_END   = 13 * 60; // 13:00
+const LUNCH_DURATION = LUNCH_END - LUNCH_START;
+
+function lunchDeductionForInterval(s, e) {
+  if (s < LUNCH_START && e > LUNCH_END) return LUNCH_DURATION;
+  return 0;
+}
+
+function toggleCalcPanel(){
+  const panel = document.getElementById('calc-panel');
+  const btn   = document.getElementById('btn-calc-toggle');
+  const open  = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  btn.classList.toggle('active', open);
+  if(open) renderCalcIntervals();
+}
+
+function addCalcInterval(){
+  calcIntervals.push({id: calcNextId++, start:'', end:''});
+  renderCalcIntervals();
+}
+
+function removeCalcInterval(id){
+  if(calcIntervals.length === 1) return;
+  calcIntervals = calcIntervals.filter(i => i.id !== id);
+  renderCalcIntervals();
+}
+
+function parseCalcTime(s){
+  if(!s) return null;
+  const m = s.match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return null;
+  const h = parseInt(m[1]), min = parseInt(m[2]);
+  if(h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+
+function recalcIntervals(){
+  document.getElementById('calc-err').textContent = '';
+  let grossTotal = 0, totalDeduct = 0, valid = 0, hasErr = false;
+
+  for(const iv of calcIntervals){
+    if(!iv.start && !iv.end) continue;
+    const s = parseCalcTime(iv.start);
+    const e = parseCalcTime(iv.end);
+    if(s === null || e === null){ hasErr = true; continue; }
+    const diff = e - s;
+    if(diff <= 0){
+      hasErr = true;
+      document.getElementById('calc-err').textContent = '⚠️ Horário final deve ser maior que o inicial';
+      continue;
+    }
+    grossTotal  += diff;
+    totalDeduct += lunchDeductionForInterval(s, e);
+    valid++;
   }
+
+  const netTotal = grossTotal - totalDeduct;
+  const resEl    = document.getElementById('calc-intervals-result');
+
+  if(valid > 0){
+    resEl.style.display = 'flex';
+    const h = Math.floor(netTotal / 60), mn = netTotal % 60;
+    document.getElementById('calc-res-count').textContent = valid;
+    document.getElementById('calc-res-gross').textContent = grossTotal + ' min';
+
+    const lunchWrap = document.getElementById('calc-res-lunch-wrap');
+    if(totalDeduct > 0){
+      lunchWrap.style.display = 'flex';
+      document.getElementById('calc-res-lunch').textContent = '−' + totalDeduct + ' min';
+    } else {
+      lunchWrap.style.display = 'none';
+    }
+
+    document.getElementById('calc-res-mins').textContent = netTotal + ' min';
+    document.getElementById('calc-res-hrs').textContent  = (h > 0 ? h + 'h ' : '') + (mn > 0 ? mn + 'm' : (h > 0 ? '' : '0m'));
+  } else {
+    resEl.style.display = 'none';
+  }
+}
+
+function applyCalcMins(){
+  let grossTotal = 0, totalDeduct = 0;
+  for(const iv of calcIntervals){
+    const s = parseCalcTime(iv.start), e = parseCalcTime(iv.end);
+    if(s !== null && e !== null && e > s){
+      grossTotal += e - s;
+      totalDeduct += lunchDeductionForInterval(s, e);
+    }
+  }
+
+  const netTotal = grossTotal - totalDeduct;
+  if(netTotal > 0){
+    document.getElementById('f-minutes').value = netTotal;
+    updateCalc();
+    document.getElementById('calc-panel').style.display = 'none';
+    document.getElementById('btn-calc-toggle').classList.remove('active');
+
+    const mf = document.getElementById('f-minutes');
+    mf.style.borderColor = 'var(--success)';
+    setTimeout(() => { mf.style.borderColor = ''; }, 1500);
+
+    showToast(netTotal + ' minutos aplicados!', 'success');
+    calcIntervals = [{id:1, start:'', end:''}];
+    calcNextId = 2;
+  }
+}
+
+function renderCalcIntervals(){
+  const c = document.getElementById('calc-intervals-container');
+  c.innerHTML = calcIntervals.map((iv) => `
+    <div class="calc-interval-row">
+      <div class="cif"><label>Entrada</label><input type="time" value="${iv.start}" oninput="calcIntervals.find(x=>x.id===${iv.id}).start=this.value; recalcIntervals()" placeholder="13:00"/></div>
+      <div class="cif"><label>Saída</label><input type="time" value="${iv.end}" oninput="calcIntervals.find(x=>x.id===${iv.id}).end=this.value; recalcIntervals()" placeholder="15:30"/></div>
+      <button type="button" class="btn-rem-interval" onclick="removeCalcInterval(${iv.id})" ${calcIntervals.length === 1 ? 'disabled' : ''}>✕</button>
+    </div>
+  `).join('');
+  recalcIntervals();
+}
+
+function resetCalcPanel(){
+  calcIntervals = [{id:1, start:'', end:''}];
+  calcNextId = 2;
+  const panel = document.getElementById('calc-panel');
+  if(panel) panel.style.display = 'none';
+  const btn = document.getElementById('btn-calc-toggle');
+  if(btn) btn.classList.remove('active');
+}
+
+// --- MODO ESCURO ---
+function initTheme() {
+  if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
 }
 function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
 }
 initTheme();
 
@@ -620,10 +752,11 @@ async function loadManagedUsers(){
 async function loadAuthProfiles(){
   const { data } = await db.from('profiles').select('id,name,email,role').order('name');
   authProfiles = data || [];
-  renderAuthList(); populateAssignDropdown();
+  renderAuthList(); 
+  populateAssignDropdown();
 }
 
-// --- RENDENRIZAÇÃO DE INTERFACE ---
+// --- RENDENRIZAÇÃO DE INTERFACE E MODAIS ---
 function renderPeriodDropdown() {
   const sel = document.getElementById('header-period-select');
   sel.innerHTML = '<option value="">Todas as competências</option>';
@@ -635,6 +768,75 @@ function renderPeriodDropdown() {
 function selectPeriod(id) {
   selectedPeriodId = id || null;
   updateView();
+}
+
+function populateAssignDropdown() {
+  const sel = document.getElementById('f-assign');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Meu próprio registro —</option>';
+  
+  if (authProfiles.length) {
+    const og = document.createElement('optgroup'); og.label = '🔑 Acessos Autenticados';
+    authProfiles.forEach(p => { const o = document.createElement('option'); o.value = 'auth:' + p.id; o.textContent = p.name || p.email; og.appendChild(o); });
+    sel.appendChild(og);
+  }
+  if (managedUsers.length) {
+    const og = document.createElement('optgroup'); og.label = '👤 Indicadores S/ Login';
+    managedUsers.forEach(m => { const o = document.createElement('option'); o.value = 'managed:' + m.id; o.textContent = m.name + (m.description ? ' — ' + m.description : ''); og.appendChild(o); });
+    sel.appendChild(og);
+  }
+  if (cur) sel.value = cur;
+}
+
+function updatePeriodWarning() {
+  const pid = document.getElementById('f-period').value;
+  const per = allPeriods.find(p => p.id === pid);
+  const warn = document.getElementById('period-closed-warn');
+  if (warn) warn.style.display = (per && per.status === 'closed') ? 'block' : 'none';
+}
+
+function renderPeriodsList() {
+  const el = document.getElementById('periods-list');
+  if (!allPeriods.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Nenhum período criado</div>'; return; }
+  el.innerHTML = allPeriods.map(p => {
+    const isOpen = p.status === 'open';
+    return `<div class="period-list-item" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:600;color:var(--text-dark)">${esc(p.name)}</div>
+        <div style="font-size:11px;color:var(--muted)">${isOpen ? 'Aberto' : 'Fechado'}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        ${isOpen ? `<button class="btn-secondary" style="padding:6px 12px;font-size:11px" onclick="openClosePeriod('${p.id}')">🔒 Fechar</button>` : ''}
+        <button class="btn-row-action danger" onclick="deletePeriod('${p.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderManagedList() {
+  const el = document.getElementById('managed-list');
+  if (!managedUsers.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Nenhum indicador criado</div>'; return; }
+  el.innerHTML = managedUsers.map(m => `
+    <div class="user-list-item" style="justify-content:space-between">
+      <div>
+        <div style="font-weight:600;color:var(--text-dark)">${esc(m.name)}</div>
+        <div style="font-size:11px;color:var(--muted)">${esc(m.description || 'Sem descrição')}</div>
+      </div>
+      <button class="btn-row-action danger" onclick="deleteManagedUser('${m.id}')">🗑️</button>
+    </div>`).join('');
+}
+
+function renderAuthList() {
+  const el = document.getElementById('auth-list');
+  if (!authProfiles.length) { el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Nenhum usuário com login.</div>'; return; }
+  el.innerHTML = authProfiles.map(p => `
+    <div class="user-list-item">
+      <div>
+        <div style="font-weight:600;color:var(--text-dark)">${esc(p.name || p.email)}</div>
+        <div style="font-size:11px;color:var(--muted)">Acesso Google - ${p.role === 'admin' ? 'Admin' : 'Usuário'}</div>
+      </div>
+    </div>`).join('');
 }
 
 function syncSearch(val) {
@@ -659,17 +861,14 @@ function getFiltered(){
 function updateView() {
   const data = getFiltered();
   
-  // Atualiza Totais
   const mins = data.reduce((s,r)=>s+(r.minutes||0),0);
   const val  = data.reduce((s,r)=>s+(r.total_value||0),0);
   
   document.getElementById('stat-total').textContent = data.length;
   document.getElementById('stat-mins').textContent = formatMins(mins);
   document.getElementById('stat-value').textContent = fmtCurrency(val);
-  
   document.getElementById('filter-status').textContent = document.getElementById('search-input').value ? 'Situação: Filtrado' : 'Situação: Todos';
 
-  // Renderiza Tabela
   const tbody = document.getElementById('table-body');
   if(!data.length){
     tbody.innerHTML=`<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--muted)">Nenhum registro encontrado.</td></tr>`;
@@ -683,9 +882,9 @@ function updateView() {
     const pName = r.period?.name || '—';
     
     return `<tr>
-      <td class="cb-cell"><input type="checkbox"></td>
+      <td class="cb-cell"><input type="checkbox" disabled></td>
       <td>
-        <div class="service-desc">${esc(r.service_name)} <span class="copy-icon" title="Copiar">📋</span></div>
+        <div class="service-desc">${esc(r.service_name)}</div>
         ${r.quantity ? `<div class="notes-sub">Qtd: ${esc(r.quantity)}</div>` : ''}
         ${r.notes ? `<div class="notes-sub">${esc(r.notes)}</div>` : ''}
       </td>
@@ -712,6 +911,9 @@ async function saveRecord(){
 
   if(!period_id || !service || !minutes || !rate) return showToast('Preencha os campos obrigatórios','error');
 
+  const per = allPeriods.find(p=>p.id===period_id);
+  if(!isAdmin && per?.status==='closed') return showToast('Operação negada: Competência fechada.','error');
+
   let user_id = currentUser.id;
   let managed_user_id = null;
   if(assign.startsWith('auth:')) user_id = assign.replace('auth:','');
@@ -724,9 +926,11 @@ async function saveRecord(){
     notes: document.getElementById('f-notes').value||null
   };
 
-  if(editingId) await db.from('service_records').update(payload).eq('id',editingId);
-  else await db.from('service_records').insert(payload);
+  let error;
+  if(editingId) ({error} = await db.from('service_records').update(payload).eq('id',editingId));
+  else ({error} = await db.from('service_records').insert(payload));
 
+  if(error) return showToast('Erro: ' + error.message, 'error');
   closeModal('modal-form'); await loadRecords(); showToast('Salvo com sucesso');
 }
 
@@ -734,6 +938,171 @@ async function confirmDelete(){
   await db.from('service_records').delete().eq('id',deletingId);
   closeModal('modal-confirm'); await loadRecords(); showToast('Registro excluído');
 }
+
+// --- CRUD PERÍODOS E USUÁRIOS ---
+async function createPeriod(){
+  const name = document.getElementById('per-name').value.trim();
+  if(!name) return showToast('Nome do período é obrigatório','error');
+  await db.from('periods').insert({ name, created_by:currentUser.id });
+  document.getElementById('per-name').value='';
+  await loadPeriods(); renderPeriodsList(); showToast('Período criado');
+}
+
+async function deletePeriod(id){
+  const { error } = await db.from('periods').delete().eq('id',id);
+  if(error) return showToast('Não foi possível excluir o período','error');
+  if(selectedPeriodId===id) selectedPeriodId=null;
+  await loadPeriods(); renderPeriodsList(); await loadRecords();
+}
+
+function openClosePeriod(id){ closingPeriodId=id; openModal('modal-close-period'); }
+async function confirmClosePeriod(){
+  await db.from('periods').update({ status:'closed' }).eq('id',closingPeriodId);
+  closeModal('modal-close-period'); await loadPeriods(); renderPeriodsList(); await loadRecords();
+}
+
+async function createManagedUser(){
+  const name=document.getElementById('mu-name').value.trim();
+  if(!name) return showToast('O nome é obrigatório','error');
+  await db.from('managed_users').insert({ name });
+  document.getElementById('mu-name').value='';
+  await loadManagedUsers(); renderManagedList(); showToast('Indicador criado');
+}
+
+function deleteManagedUser(id){ deletingMUId=id; openModal('modal-confirm-mu'); }
+async function confirmDeleteMU(){
+  await db.from('managed_users').delete().eq('id',deletingMUId);
+  closeModal('modal-confirm-mu'); await loadManagedUsers(); renderManagedList(); await loadRecords();
+}
+
+// --- RELATÓRIOS ---
+function openReportModal() {
+  if (authProfiles.length === 0) loadAuthProfiles();
+
+  const sel = document.getElementById('rep-period');
+  sel.innerHTML = '<option value="">— Selecione uma competência —</option>' + 
+                  allPeriods.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+
+  const uList = document.getElementById('rep-users-list');
+  let html = '';
+  const addCheckbox = (id, name, isManaged) => {
+    html += `<label style="display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer;">
+       <input type="checkbox" class="rep-u-cb" value="${isManaged ? 'managed:' : 'auth:'}${id}" checked>
+       <span style="font-size:13px;color:var(--text-dark);">${esc(name)} ${isManaged ? '<span style="color:var(--muted);font-size:11px">(Indicador)</span>' : ''}</span>
+    </label>`;
+  };
+
+  authProfiles.forEach(p => addCheckbox(p.id, p.name || p.email, false));
+  managedUsers.forEach(m => addCheckbox(m.id, m.name, true));
+
+  uList.innerHTML = html;
+  document.getElementById('rep-all-users').checked = true;
+
+  openModal('modal-report');
+}
+
+function toggleAllRepUsers() {
+  const isChecked = document.getElementById('rep-all-users').checked;
+  document.querySelectorAll('.rep-u-cb').forEach(cb => cb.checked = isChecked);
+}
+
+function generateReport() {
+  const periodId = document.getElementById('rep-period').value;
+  if (!periodId) return showToast('Erro: Selecione a competência', 'error');
+
+  const period = allPeriods.find(p => p.id === periodId);
+  const selectedUsers = Array.from(document.querySelectorAll('.rep-u-cb:checked')).map(cb => cb.value);
+  if (selectedUsers.length === 0) return showToast('Selecione profissionais para a emissão', 'error');
+
+  const reportData = allRecords.filter(r => {
+    if (r.period_id !== periodId) return false;
+    let uKey = r.managed_user_id ? 'managed:' + r.managed_user_id : 'auth:' + r.user_id;
+    return selectedUsers.includes(uKey);
+  });
+
+  if (reportData.length === 0) return showToast('Aviso: Não há transações para este filtro', 'error');
+
+  const grouped = {};
+  let grandTotal = 0, grandMins = 0;
+
+  reportData.forEach(r => {
+    let uKey = r.managed_user_id ? 'managed:' + r.managed_user_id : 'auth:' + r.user_id;
+    const name = (r.managedUser?.name || r.profiles?.name || r.profiles?.email || '—');
+
+    if (!grouped[uKey]) grouped[uKey] = { name, records: [], total: 0, mins: 0 };
+    grouped[uKey].records.push(r);
+    grouped[uKey].total += r.total_value || 0;
+    grouped[uKey].mins += (r.minutes || 0);
+    
+    grandTotal += r.total_value || 0;
+    grandMins += (r.minutes || 0);
+  });
+
+  let printHtml = `
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+      <meta charset="UTF-8"><title>Relatório - ${esc(period.name)}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 30px; color: #333; max-width: 900px; margin: 0 auto; }
+        h1 { margin: 0; font-size: 20px; }
+        h2 { margin: 5px 0 20px; font-size: 14px; color: #666; font-weight: normal; }
+        h3 { margin-top: 30px; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+        th { font-weight: bold; color: #555; background: #f9f9f9; }
+        .text-right { text-align: right; }
+        .summary { background: #f5f5f5; padding: 15px; margin-top: 40px; display: flex; justify-content: space-between; font-weight: bold; }
+        .btn-print { display: block; margin: 0 auto 20px; padding: 10px 20px; background: #1eb974; color: #fff; border: none; cursor: pointer; border-radius: 4px;}
+        @media print { .btn-print { display: none; } body { padding: 0; } }
+      </style>
+    </head>
+    <body>
+      <button class="btn-print" onclick="window.print()">Imprimir PDF</button>
+      <h1>Relatório de Lançamentos</h1>
+      <h2>Competência: <strong>${esc(period.name)}</strong></h2>
+  `;
+
+  Object.values(grouped).forEach(g => {
+    printHtml += `
+      <h3>${esc(g.name)}</h3>
+      <table>
+        <thead><tr><th>Serviço</th><th class="text-right">R$/min</th><th class="text-right">Tempo</th><th class="text-right">Total</th></tr></thead>
+        <tbody>
+    `;
+    g.records.forEach(r => {
+      printHtml += `<tr>
+        <td>${esc(r.service_name)} ${r.quantity?` (Qtd: ${esc(r.quantity)})`:''}</td>
+        <td class="text-right">${r.minute_rate != null ? fmtCurrency(r.minute_rate) : '—'}</td>
+        <td class="text-right">${r.minutes != null ? formatMins(r.minutes) : '—'}</td>
+        <td class="text-right" style="font-weight:bold;">${fmtCurrency(r.total_value)}</td>
+      </tr>`;
+    });
+    printHtml += `</tbody>
+        <tfoot><tr>
+          <td colspan="2" class="text-right" style="font-size:11px; color:#666;">SUBTOTAL</td>
+          <td class="text-right">${formatMins(g.mins)}</td>
+          <td class="text-right" style="font-weight:bold;">${fmtCurrency(g.total)}</td>
+        </tr></tfoot>
+      </table>`;
+  });
+
+  printHtml += `
+      <div class="summary">
+        <span>Resumo Geral do Período</span>
+        <span>Tempo: ${formatMins(grandMins)} | Total Bruto: ${fmtCurrency(grandTotal)}</span>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(printHtml);
+  printWindow.document.close();
+  closeModal('modal-report');
+  setTimeout(() => { printWindow.print(); }, 500);
+}
+
 
 // --- OUTROS ---
 function updateCalc(){
@@ -750,7 +1119,7 @@ function openAddModal(){
   pf.innerHTML = '<option value="">— Selecione —</option>' + allPeriods.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   if(selectedPeriodId) pf.value = selectedPeriodId;
   
-  updateCalc(); openModal('modal-form');
+  updateCalc(); updatePeriodWarning(); openModal('modal-form');
 }
 
 function openEditModal(id){
@@ -764,13 +1133,12 @@ function openEditModal(id){
   document.getElementById('f-notes').value = r.notes||'';
   document.getElementById('f-period').value = r.period_id;
   if(isAdmin) document.getElementById('f-assign').value = r.managed_user_id ? 'managed:'+r.managed_user_id : (r.user_id !== currentUser.id ? 'auth:'+r.user_id : '');
-  updateCalc();
+  updateCalc(); updatePeriodWarning();
 }
 
 function openDeleteModal(id){ deletingId=id; openModal('modal-confirm'); }
-function openPeriodsModal(){ openModal('modal-periods'); }
-function openUsersModal(){ openModal('modal-users'); loadAuthProfiles(); }
-function openReportModal(){ openModal('modal-report'); }
+function openPeriodsModal(){ renderPeriodsList(); openModal('modal-periods'); }
+function openUsersModal(){ renderManagedList(); openModal('modal-users'); loadAuthProfiles(); }
 
 function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
