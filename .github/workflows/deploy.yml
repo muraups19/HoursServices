@@ -1,0 +1,40 @@
+name: Automação Supabase e Deploy
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *' # Mantém o banco ativo a cada 3 dias
+  push:
+    branches:
+      - main # Faz o deploy do site quando você envia código para a main
+
+jobs:
+  # JOB 1: Mantém o banco acordado
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar requisição para o Banco
+        run: |
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/managed_users?limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
+
+  # JOB 2: Atualiza o seu site injetando as chaves
+  deploy-site:
+    runs-on: ubuntu-latest
+    # Garante que o deploy só roda se o push for na branch main
+    if: github.event_name == 'push' 
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Injetar chaves do Supabase
+        run: |
+          # Troque 'index.html' pelo nome do seu arquivo caso as constantes estejam em um arquivo .js separado
+          sed -i "s|SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" index.html
+          sed -i "s|SUPABASE_ANON_SECRET|${{ secrets.SUPABASE_ANON_KEY }}|g" index.html
+
+      - name: Enviar para o GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .
+          branch: gh-pages
