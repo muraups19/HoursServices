@@ -7,6 +7,10 @@ on:
     branches:
       - main # Faz o deploy do site quando você envia código para a main
 
+# ISSO IMPORTA: Dá permissão para o bot atualizar o código do repositório
+permissions:
+  contents: write
+
 jobs:
   # JOB 1: Mantém o banco acordado
   ping-supabase:
@@ -21,7 +25,6 @@ jobs:
   # JOB 2: Atualiza o seu site injetando as chaves
   deploy-site:
     runs-on: ubuntu-latest
-    # Garante que o deploy só roda se o push for na branch main
     if: github.event_name == 'push' 
     steps:
       - name: Checkout do código
@@ -29,7 +32,6 @@ jobs:
 
       - name: Injetar chaves do Supabase
         run: |
-          # Troque 'index.html' pelo nome do seu arquivo caso as constantes estejam em um arquivo .js separado
           sed -i "s|SUPABASE_URL|${{ secrets.SUPABASE_URL }}|g" index.html
           sed -i "s|SUPABASE_ANON_SECRET|${{ secrets.SUPABASE_ANON_KEY }}|g" index.html
 
