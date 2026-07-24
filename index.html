@@ -130,6 +130,9 @@
     
     .cb-cell { width: 40px; text-align: center; }
     .cb-cell input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { color: var(--accent); }
+    .sort-ico { font-size: 10px; color: var(--accent); margin-left: 2px; }
     
     .service-desc { font-weight: 500; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
     .copy-icon { font-size: 10px; color: var(--muted); cursor: pointer; }
@@ -217,11 +220,45 @@
     .calc-res-val.green { color: var(--accent); }
     .calc-res-val.lunch-deduct { color: var(--danger); }
 
+    /* ================= CARDS MOBILE ================= */
+    .mobile-only { display: none; }
+    .desktop-only { display: block; }
+    .cards-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; box-shadow: var(--shadow); animation: fadeUp .25s ease both; }
+    .rec-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .rec-card-user { font-size: 11px; color: var(--muted); }
+    .rec-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .rec-card-name { font-weight: 600; font-size: 14px; color: var(--text-dark); }
+    .rec-card-note { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .rec-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .rec-card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .rec-info-item .lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px; }
+    .rec-info-item .val { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    .rec-info-item .val.accent { color: var(--accent); }
+
+    /* FAB (botão flutuante mobile) */
+    .fab { display: none; }
+
+    /* ALERTA DE PERÍODO */
+    .no-period-alert { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.25); border-radius: var(--r); padding: 12px 16px; color: var(--danger); font-size: 13px; margin-bottom: 16px; display: none; }
+
     /* RESPONSIVIDADE BÁSICA */
     @media(max-width: 900px) {
-      .bling-layout { flex-direction: column; padding: 16px; }
+      .bling-layout { flex-direction: column; padding: 16px; padding-bottom: 90px; }
       .sidebar-right { width: 100%; }
       .header-center { display: none; }
+      .mobile-only { display: block; }
+      .desktop-only { display: none; }
+      .btn-incluir { display: none; }
+      .fab {
+        display: flex; position: fixed; bottom: calc(20px + var(--safe-bot)); right: 20px; z-index: 90;
+        width: 56px; height: 56px; background: var(--accent); color: #fff; border: none; border-radius: 50%;
+        font-size: 26px; font-weight: 300; align-items: center; justify-content: center; cursor: pointer;
+        box-shadow: 0 6px 20px rgba(30,185,116,.45); transition: transform .15s;
+      }
+      .fab:active { transform: scale(.93); }
+      .table-toolbar { flex-wrap: wrap; }
+      .toolbar-left { width: 100%; }
     }
 
     /* TOAST / LOADING */
@@ -326,18 +363,20 @@
         </div>
       </div>
 
-      <!-- TABELA -->
-      <div class="table-wrap">
+      <div id="no-period-alert" class="no-period-alert">⚠️ Não há nenhuma competência aberta no momento. Peça a um administrador para criar ou reabrir um período.</div>
+
+      <!-- TABELA (DESKTOP) -->
+      <div class="table-wrap desktop-only">
         <table>
           <thead>
             <tr>
               <th class="cb-cell"><input type="checkbox" disabled></th>
-              <th>Descrição do Serviço</th>
-              <th id="th-user" style="display:none">Profissional</th>
-              <th>Status Período</th>
-              <th>Tempo Apurado</th>
-              <th>Taxa (R$)</th>
-              <th>Total Bruto</th>
+              <th class="sortable" data-sort="service_name" onclick="setSort('service_name')">Descrição do Serviço <span class="sort-ico"></span></th>
+              <th id="th-user" style="display:none" class="sortable" data-sort="user" onclick="setSort('user')">Profissional <span class="sort-ico"></span></th>
+              <th class="sortable" data-sort="period" onclick="setSort('period')">Status Período <span class="sort-ico"></span></th>
+              <th class="sortable" data-sort="minutes" onclick="setSort('minutes')">Tempo Apurado <span class="sort-ico"></span></th>
+              <th class="sortable" data-sort="minute_rate" onclick="setSort('minute_rate')">Taxa (R$) <span class="sort-ico"></span></th>
+              <th class="sortable" data-sort="total_value" onclick="setSort('total_value')">Total Bruto <span class="sort-ico"></span></th>
               <th></th>
             </tr>
           </thead>
@@ -346,7 +385,12 @@
           </tbody>
         </table>
       </div>
-      
+
+      <!-- CARDS (MOBILE) -->
+      <div class="mobile-only">
+        <div id="cards-list" class="cards-list"></div>
+      </div>
+
     </main>
 
     <!-- SIDEBAR (DIREITA) -->
@@ -382,10 +426,17 @@
           <span class="info-label">Previsão a Receber</span>
           <span class="info-val" id="stat-value">R$ 0,00</span>
         </div>
+
+        <div class="info-block" id="info-qty-block" style="display:none">
+          <span class="info-label">Quantidade (nos resultados)</span>
+          <span class="info-val" id="stat-qty" style="font-size:14px; white-space:pre-line;">—</span>
+        </div>
       </div>
 
     </aside>
   </div>
+
+  <button class="fab" onclick="openAddModal()" title="Incluir lançamento">＋</button>
 </div>
 
 <!-- ================= MODAIS ================= -->
@@ -568,6 +619,32 @@
       <div style="display:flex;gap:8px;justify-content:center">
         <button class="btn-secondary" onclick="closeModal('modal-confirm')">Cancelar</button>
         <button class="btn-danger" onclick="confirmDelete()">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-close-period" class="modal-overlay" onclick="closeOnOverlay(event,'modal-close-period')">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-inner" style="text-align:center">
+      <h3 style="color:var(--text-dark); margin-bottom:8px">Fechar Período?</h3>
+      <p style="color:var(--muted); margin-bottom:24px; font-size:13px">Depois de fechado, nenhum novo lançamento poderá ser feito por usuários comuns nesta competência. Os registros existentes serão preservados.</p>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn-secondary" onclick="closeModal('modal-close-period')">Cancelar</button>
+        <button class="btn-danger" onclick="confirmClosePeriod()">Fechar Período</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-confirm-mu" class="modal-overlay" onclick="closeOnOverlay(event,'modal-confirm-mu')">
+  <div class="modal" style="max-width:340px">
+    <div class="modal-inner" style="text-align:center">
+      <h3 style="color:var(--text-dark); margin-bottom:8px">Remover Indicador?</h3>
+      <p style="color:var(--muted); margin-bottom:24px; font-size:13px">Os lançamentos já vinculados a este indicador não serão excluídos, apenas o vínculo será removido.</p>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn-secondary" onclick="closeModal('modal-confirm-mu')">Cancelar</button>
+        <button class="btn-danger" onclick="confirmDeleteMU()">Remover</button>
       </div>
     </div>
   </div>
@@ -780,20 +857,28 @@ async function showApp(){
 // --- CARREGAMENTO DE DADOS ---
 async function loadPeriods(){
   const { data, error } = await db.from('periods').select('*').order('created_at',{ascending:false});
-  if(!error) allPeriods = data || [];
-  
+  if(error){ showToast('Erro ao carregar períodos: '+error.message,'error'); return; }
+  allPeriods = data || [];
+
   if (isPrimeiroCarregamento && allPeriods.length > 0) {
     selectedPeriodId = allPeriods[0].id;
     isPrimeiroCarregamento = false; 
   }
   renderPeriodDropdown();
+  updateNoPeriodWarning();
+}
+
+function updateNoPeriodWarning(){
+  const hasOpen = allPeriods.some(p=>p.status==='open');
+  const el = document.getElementById('no-period-alert');
+  if(el) el.style.display = hasOpen ? 'none' : 'block';
 }
 
 async function loadRecords(){
   let q = db.from('service_records').select('*').order('created_at',{ascending:false});
   if(!isAdmin) q = q.eq('user_id', currentUser.id);
   const { data, error } = await q;
-  if(error) return;
+  if(error){ showToast('Erro ao carregar registros: '+error.message,'error'); return; }
 
   allRecords = data || [];
   if(isAdmin && allRecords.length){
@@ -906,48 +991,123 @@ function renderAuthList() {
     </div>`).join('');
 }
 
+function debounce(fn, ms){
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(()=>fn(...args), ms); };
+}
+
 function syncSearch(val) {
   document.getElementById('search-input').value = val;
   onSearch();
 }
 
-function onSearch(){ updateView(); }
+const onSearch = debounce(()=>updateView(), 200);
 function clearSearch(){ document.getElementById('search-input').value=''; document.getElementById('global-search').value=''; updateView(); }
+
+let sortField = null;
+let sortDir = 1; // 1 asc, -1 desc
+
+function setSort(field){
+  if(sortField===field) sortDir *= -1; else { sortField=field; sortDir=1; }
+  updateView();
+}
+
+function getDisplayName(r){ return r.managedUser?.name || r.profiles?.name || r.profiles?.email || '—'; }
+
+function sortData(data){
+  if(!sortField) return data;
+  const arr = [...data];
+  arr.sort((a,b)=>{
+    let av, bv;
+    switch(sortField){
+      case 'service_name': av=a.service_name||''; bv=b.service_name||''; break;
+      case 'user':          av=getDisplayName(a); bv=getDisplayName(b); break;
+      case 'period':        av=a.period?.name||''; bv=b.period?.name||''; break;
+      case 'minutes':       av=a.minutes||0; bv=b.minutes||0; break;
+      case 'minute_rate':   av=a.minute_rate||0; bv=b.minute_rate||0; break;
+      case 'total_value':   av=a.total_value||0; bv=b.total_value||0; break;
+      default: av=0; bv=0;
+    }
+    if(typeof av === 'string') return av.localeCompare(bv) * sortDir;
+    return (av - bv) * sortDir;
+  });
+  return arr;
+}
 
 function getFiltered(){
   const q = document.getElementById('search-input').value.toLowerCase().trim();
   let data = allRecords;
   if(selectedPeriodId) data = data.filter(r=>r.period_id===selectedPeriodId);
   if(q) data = data.filter(r=>{
-    const n = (r.managedUser?.name || r.profiles?.name || r.profiles?.email || '').toLowerCase();
+    const n = getDisplayName(r).toLowerCase();
     return r.service_name.toLowerCase().includes(q) || n.includes(q) || (r.notes||'').toLowerCase().includes(q);
   });
-  return data;
+  return sortData(data);
+}
+
+function parseQtyText(text){
+  if(!text||!text.trim()) return null;
+  const m=text.trim().match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
+  if(m) return { num:parseFloat(m[1].replace(',','.')), unit:(m[2].trim()||'un').toLowerCase() };
+  return { num:null, unit:text.trim().toLowerCase() };
+}
+function buildQtySummary(data){
+  const groups={}; let hasAny=false;
+  data.forEach(r=>{
+    if(!r.quantity) return; hasAny=true;
+    const p=parseQtyText(r.quantity); if(!p) return;
+    if(p.num!==null) groups[p.unit]=(groups[p.unit]||0)+p.num;
+    else groups[p.unit]=(groups[p.unit]||0)+1;
+  });
+  if(!hasAny) return null;
+  return Object.entries(groups).map(([u,t])=>{
+    const n = Number.isInteger(t) ? t : t.toFixed(2).replace('.',',');
+    return `${n} ${u}`;
+  }).join('\n')||null;
 }
 
 function updateView() {
   const data = getFiltered();
-  
+
   const mins = data.reduce((s,r)=>s+(r.minutes||0),0);
   const val  = data.reduce((s,r)=>s+(r.total_value||0),0);
-  
+
   document.getElementById('stat-total').textContent = data.length;
   document.getElementById('stat-mins').textContent = formatMins(mins);
   document.getElementById('stat-value').textContent = fmtCurrency(val);
-  document.getElementById('filter-status').textContent = document.getElementById('search-input').value ? 'Situação: Filtrado' : 'Situação: Todos';
 
+  const q = document.getElementById('search-input').value;
+  const perName = selectedPeriodId ? (allPeriods.find(p=>p.id===selectedPeriodId)?.name || '') : 'Todas competências';
+  document.getElementById('filter-status').textContent = 'Situação: ' + (q ? 'Filtrado — ' : '') + perName;
+
+  const qtyBlock = document.getElementById('info-qty-block');
+  const qtySummary = buildQtySummary(data);
+  if(qtySummary){ qtyBlock.style.display='block'; document.getElementById('stat-qty').textContent = qtySummary; }
+  else { qtyBlock.style.display='none'; }
+
+  document.querySelectorAll('th.sortable .sort-ico').forEach(el=>el.textContent='');
+  if(sortField){
+    const th = document.querySelector(`th[data-sort="${sortField}"] .sort-ico`);
+    if(th) th.textContent = sortDir===1 ? '▲' : '▼';
+  }
+
+  renderTable(data);
+  renderCards(data);
+}
+
+function renderTable(data){
   const tbody = document.getElementById('table-body');
   if(!data.length){
     tbody.innerHTML=`<tr><td colspan="8" style="text-align:center; padding:40px; color:var(--muted)">Nenhum registro encontrado.</td></tr>`;
     return;
   }
-  
+
   tbody.innerHTML = data.map(r=>{
-    const uName = r.managedUser?.name || r.profiles?.name || r.profiles?.email || '—';
+    const uName = getDisplayName(r);
     const isMng = r.managed_user_id ? ' (Ind)' : '';
     const pSt   = r.period?.status === 'open' ? 'status-open' : 'status-closed';
     const pName = r.period?.name || '—';
-    
+
     return `<tr>
       <td class="cb-cell"><input type="checkbox" disabled></td>
       <td>
@@ -961,10 +1121,48 @@ function updateView() {
       <td><span class="val-green">${fmtCurrency(r.minute_rate)}</span></td>
       <td style="font-weight:600; color:var(--text-dark);">${fmtCurrency(r.total_value)}</td>
       <td class="actions-cell">
-        <button class="btn-row-action" onclick="openEditModal('${r.id}')">✏️</button>
-        <button class="btn-row-action danger" onclick="openDeleteModal('${r.id}')">🗑️</button>
+        <button class="btn-row-action" onclick="openEditModal('${r.id}')" title="Editar">✏️</button>
+        <button class="btn-row-action danger" onclick="openDeleteModal('${r.id}')" title="Excluir">🗑️</button>
       </td>
     </tr>`;
+  }).join('');
+}
+
+function renderCards(data){
+  const el = document.getElementById('cards-list');
+  if(!el) return;
+  if(!data.length){
+    const q = document.getElementById('search-input').value;
+    el.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--muted)">${q ? 'Nenhum resultado para "'+esc(q)+'"' : 'Nenhum registro. Toque em ＋ para adicionar.'}</div>`;
+    return;
+  }
+  el.innerHTML = data.map((r,i)=>{
+    const uName = getDisplayName(r);
+    const isMng = r.managed_user_id ? ' (Indicador)' : '';
+    const pSt   = r.period?.status === 'open' ? 'status-open' : 'status-closed';
+    const pName = r.period?.name || '—';
+    return `<div class="rec-card" style="animation-delay:${i*.03}s">
+      <div class="rec-card-header">
+        ${isAdmin ? `<span class="rec-card-user">${esc(uName)}${isMng}</span>` : ''}
+        <span class="status-pill ${pSt}">${esc(pName)}</span>
+      </div>
+      <div class="rec-card-top">
+        <div>
+          <div class="rec-card-name">${esc(r.service_name)}</div>
+          ${r.quantity ? `<div class="rec-card-note">Qtd: ${esc(r.quantity)}</div>` : ''}
+          ${r.notes ? `<div class="rec-card-note">${esc(r.notes)}</div>` : ''}
+        </div>
+        <div class="rec-card-actions">
+          <button class="btn-row-action" onclick="openEditModal('${r.id}')" title="Editar">✏️</button>
+          <button class="btn-row-action danger" onclick="openDeleteModal('${r.id}')" title="Excluir">🗑️</button>
+        </div>
+      </div>
+      <div class="rec-card-grid">
+        <div class="rec-info-item"><div class="lbl">Tempo</div><div class="val">${formatMins(r.minutes)}</div></div>
+        <div class="rec-info-item"><div class="lbl">R$/min</div><div class="val">${fmtCurrency(r.minute_rate)}</div></div>
+        <div class="rec-info-item"><div class="lbl">Total</div><div class="val accent">${fmtCurrency(r.total_value)}</div></div>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -976,7 +1174,10 @@ async function saveRecord(){
   const rate      = parseFloat(document.getElementById('f-rate').value);
   const assign    = isAdmin ? document.getElementById('f-assign').value : '';
 
-  if(!period_id || !service || !minutes || !rate) return showToast('Preencha os campos obrigatórios','error');
+  if(!period_id)           return showToast('Selecione uma competência (período)','error');
+  if(!service)             return showToast('Informe o nome do serviço','error');
+  if(!minutes || minutes<1) return showToast('Informe o tempo em minutos (mínimo 1)','error');
+  if(!rate || rate<=0)     return showToast('Informe a taxa por minuto','error');
 
   const per = allPeriods.find(p=>p.id===period_id);
   if(!isAdmin && per?.status==='closed') return showToast('Operação negada: Competência fechada.','error');
@@ -988,9 +1189,10 @@ async function saveRecord(){
 
   const payload = {
     user_id, managed_user_id, period_id, service_name: service,
-    minutes, minute_rate: rate, total_value: minutes * rate,
-    quantity: document.getElementById('f-qty').value||null, 
-    notes: document.getElementById('f-notes').value||null
+    minutes, minute_rate: rate, hourly_rate: rate*60, duration_hours: minutes/60,
+    total_value: minutes * rate,
+    quantity: document.getElementById('f-qty').value.trim()||null, 
+    notes: document.getElementById('f-notes').value.trim()||null
   };
 
   let error;
@@ -1002,7 +1204,8 @@ async function saveRecord(){
 }
 
 async function confirmDelete(){
-  await db.from('service_records').delete().eq('id',deletingId);
+  const { error } = await db.from('service_records').delete().eq('id',deletingId);
+  if(error) return showToast('Erro ao excluir: '+error.message,'error');
   closeModal('modal-confirm'); await loadRecords(); showToast('Registro excluído');
 }
 
@@ -1010,36 +1213,43 @@ async function confirmDelete(){
 async function createPeriod(){
   const name = document.getElementById('per-name').value.trim();
   if(!name) return showToast('Nome do período é obrigatório','error');
-  await db.from('periods').insert({ name, created_by:currentUser.id });
+  const { error } = await db.from('periods').insert({ name, created_by:currentUser.id });
+  if(error) return showToast('Erro ao criar período: '+error.message,'error');
   document.getElementById('per-name').value='';
   await loadPeriods(); renderPeriodsList(); showToast('Período criado');
 }
 
 async function deletePeriod(id){
   const { error } = await db.from('periods').delete().eq('id',id);
-  if(error) return showToast('Não foi possível excluir o período','error');
+  if(error) return showToast('Não foi possível excluir o período: '+error.message,'error');
   if(selectedPeriodId===id) selectedPeriodId=null;
   await loadPeriods(); renderPeriodsList(); await loadRecords();
+  showToast('Período excluído');
 }
 
 function openClosePeriod(id){ closingPeriodId=id; openModal('modal-close-period'); }
 async function confirmClosePeriod(){
-  await db.from('periods').update({ status:'closed' }).eq('id',closingPeriodId);
+  const { error } = await db.from('periods').update({ status:'closed' }).eq('id',closingPeriodId);
+  if(error) return showToast('Erro ao fechar período: '+error.message,'error');
   closeModal('modal-close-period'); await loadPeriods(); renderPeriodsList(); await loadRecords();
+  showToast('Período fechado');
 }
 
 async function createManagedUser(){
   const name=document.getElementById('mu-name').value.trim();
   if(!name) return showToast('O nome é obrigatório','error');
-  await db.from('managed_users').insert({ name });
+  const { error } = await db.from('managed_users').insert({ name });
+  if(error) return showToast('Erro ao criar indicador: '+error.message,'error');
   document.getElementById('mu-name').value='';
   await loadManagedUsers(); renderManagedList(); showToast('Indicador criado');
 }
 
 function deleteManagedUser(id){ deletingMUId=id; openModal('modal-confirm-mu'); }
 async function confirmDeleteMU(){
-  await db.from('managed_users').delete().eq('id',deletingMUId);
+  const { error } = await db.from('managed_users').delete().eq('id',deletingMUId);
+  if(error) return showToast('Erro ao remover: '+error.message,'error');
   closeModal('modal-confirm-mu'); await loadManagedUsers(); renderManagedList(); await loadRecords();
+  showToast('Indicador removido');
 }
 
 // --- RELATÓRIOS ---
