@@ -14,24 +14,24 @@
   <style>
     :root {
       /* TEMA CLARO - IDÊNTICO AO BLING */
-      --bg: #f3f4f6;           /* Fundo da tela */
-      --surface: #ffffff;      /* Fundo de painéis e tabela */
+      --bg: #f3f4f6;           
+      --surface: #ffffff;      
       --card: #ffffff;
-      --border: #e5e7eb;       /* Bordas sutis */
+      --border: #e5e7eb;       
       
-      --accent: #1eb974;       /* Verde Bling Principal */
-      --accent-hover: #17965b; /* Verde Bling Hover */
+      --accent: #1eb974;       
+      --accent-hover: #17965b; 
       
-      --text-dark: #374151;    /* Títulos escuros */
-      --text: #4b5563;         /* Texto padrão */
-      --muted: #9ca3af;        /* Texto secundário e ícones */
+      --text-dark: #374151;    
+      --text: #4b5563;         
+      --muted: #9ca3af;        
       
       --danger: #ef4444;       
       --success: #1eb974;      
       --info: #3b82f6;         
       
-      --r: 4px;                /* Bordas mais quadradas (ERP) */
-      --hh: 56px;              /* Altura do Header Bling */
+      --r: 4px;                
+      --hh: 56px;              
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
       --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -103,7 +103,6 @@
     .breadcrumb-arrow { color: var(--muted); font-size: 16px; margin: 0 4px; }
     .page-title { font-size: 1.5rem; font-weight: 600; color: var(--text-dark); display: inline-flex; align-items: center; gap: 12px; }
     
-    /* Seletor Estilo Bling (Dropdown Verde) */
     .period-dropdown-wrap { position: relative; display: inline-flex; align-items: center; margin-left: 8px; }
     .period-dropdown-wrap select { appearance: none; background: transparent; border: none; font-size: 14px; font-weight: 600; color: var(--accent); padding-right: 16px; cursor: pointer; outline: none; font-family: 'Inter', sans-serif; }
     .period-dropdown-wrap select option { color: var(--text-dark); background: var(--surface); }
@@ -167,9 +166,9 @@
     .info-val.green { color: var(--accent); }
 
     /* ================= MODAIS & COMPONENTES ================= */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
     .modal-overlay.open { display: flex }
-    .modal { background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: scaleIn .2s ease both; }
+    .modal { background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: scaleIn .2s ease both; }
     .modal-inner { padding: 24px }
     
     .modal-title { font-size: 1.2rem; font-weight: 600; color: var(--text-dark); margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
@@ -178,7 +177,7 @@
     /* FORMS */
     .form-grid { display: grid; gap: 16px }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px }
-    .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-dark); margin-bottom: 6px }
+    .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px; }
     .field input, .field textarea, .field select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text-dark); padding: 10px 12px; border-radius: var(--r); font-family: inherit; font-size: 13px; outline: none; transition: border-color .2s; }
     .field input:focus, .field select:focus { border-color: var(--accent); background: var(--surface); }
     
@@ -187,6 +186,36 @@
     .btn-primary { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; transition: all .2s; }
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-danger { background: var(--danger); color: #fff; border: none; padding: 10px 20px; border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; }
+
+    /* ================= CALCULADORA DE APONTAMENTOS (ESTILO BLING) ================= */
+    .minutes-input-row { display: flex; gap: 8px; align-items: center; }
+    .minutes-input-row input { flex: 1; }
+    .btn-calc-toggle { background: var(--surface); border: 1px solid var(--border); color: var(--muted); width: 38px; height: 38px; border-radius: var(--r); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; }
+    .btn-calc-toggle:hover, .btn-calc-toggle.active { background: rgba(30, 185, 116, 0.1); border-color: rgba(30, 185, 116, 0.3); color: var(--accent); }
+    
+    .calc-panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-top: 8px; animation: fadeUp .2s ease both; }
+    .calc-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .calc-panel-header span { font-size: 11px; font-weight: 600; color: var(--text-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+    .calc-panel-close { background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .calc-panel-close:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+    
+    .calc-interval-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+    .calc-interval-row .cif label { font-size: 10px; margin-bottom: 4px; color: var(--muted); }
+    .calc-interval-row .cif input { background: var(--surface); }
+    .btn-rem-interval { background: var(--surface); border: 1px solid var(--border); color: var(--muted); width: 38px; height: 38px; border-radius: var(--r); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-rem-interval:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-rem-interval:disabled { opacity: 0.4; cursor: default; }
+    
+    .btn-add-interval { width: 100%; background: transparent; border: 1px dashed var(--border); color: var(--text); padding: 8px; border-radius: var(--r); font-size: 12px; font-weight: 500; cursor: pointer; margin-top: 4px; transition: 0.2s; }
+    .btn-add-interval:hover { border-color: var(--accent); color: var(--accent); background: rgba(30, 185, 116, 0.05); }
+    
+    .calc-intervals-result { background: var(--surface); border: 1px solid rgba(30, 185, 116, 0.3); border-radius: var(--r); padding: 12px; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .calc-res-items { display: flex; gap: 16px; flex-wrap: wrap; }
+    .calc-res-items > div { display: flex; flex-direction: column; gap: 2px; }
+    .calc-res-lbl { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+    .calc-res-val { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+    .calc-res-val.green { color: var(--accent); }
+    .calc-res-val.lunch-deduct { color: var(--danger); }
 
     /* RESPONSIVIDADE BÁSICA */
     @media(max-width: 900px) {
@@ -204,7 +233,6 @@
     #loading-overlay.hidden { opacity: 0; pointer-events: none }
     .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite }
 
-    /* COMPONENTES EXTRAS MANTIDOS (Calculadora, Tabs, etc) */
     .tabs { display: flex; gap: 4px; background: var(--bg); border-radius: var(--r); padding: 4px; margin-bottom: 16px }
     .tab-btn { flex: 1; padding: 8px; border: none; background: none; color: var(--muted); border-radius: var(--r); font-weight: 500; font-size: 13px; cursor: pointer; }
     .tab-btn.active { background: var(--surface); color: var(--text-dark); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
@@ -360,9 +388,9 @@
   </div>
 </div>
 
-<!-- ================= MODAIS (MANTIDOS E ADAPTADOS) ================= -->
+<!-- ================= MODAIS ================= -->
 
-<!-- MODAL: NOVO REGISTRO -->
+<!-- MODAL: NOVO REGISTRO COM CALCULADORA -->
 <div id="modal-form" class="modal-overlay" onclick="closeOnOverlay(event,'modal-form')">
   <div class="modal">
     <div class="modal-inner">
@@ -370,7 +398,7 @@
       <div class="form-grid">
 
         <div class="field" id="field-assign" style="display:none">
-          <label>Profissional (Indicador)</label>
+          <label>Atribuir Lançamento a</label>
           <select id="f-assign"><option value="">— Meu próprio registro —</option></select>
         </div>
 
@@ -381,17 +409,57 @@
         </div>
 
         <div class="field">
-          <label>Descrição do Serviço *</label>
+          <label>Nome do Serviço *</label>
           <input type="text" id="f-service" placeholder="Ex: Ajuste de modelagem" autocomplete="off"/>
         </div>
 
         <div class="form-row">
+          <!-- ÁREA DO TEMPO COM BOTÃO CALCULADORA -->
           <div class="field">
             <label>Tempo Gasto (Minutos) *</label>
-            <div style="display:flex;gap:8px">
+            <div class="minutes-input-row">
               <input type="number" id="f-minutes" step="1" min="1" placeholder="Ex: 120" oninput="updateCalc()"/>
+              <button type="button" class="btn-calc-toggle" id="btn-calc-toggle" onclick="toggleCalcPanel()" title="Calcular por apontamentos">⏱</button>
+            </div>
+            
+            <!-- PAINEL DA CALCULADORA DE APONTAMENTOS -->
+            <div id="calc-panel" class="calc-panel" style="display:none">
+              <div class="calc-panel-header">
+                <span>Calcular por apontamentos</span>
+                <button type="button" class="calc-panel-close" onclick="toggleCalcPanel()">✕</button>
+              </div>
+              <div id="calc-intervals-container"></div>
+              <button type="button" class="btn-add-interval" onclick="addCalcInterval()">＋ Adicionar intervalo</button>
+              <div id="calc-err" class="calc-err" style="color:var(--danger);font-size:11px;margin-top:4px;min-height:16px;"></div>
+              
+              <div id="calc-intervals-result" class="calc-intervals-result" style="display:none">
+                <div class="calc-res-items">
+                  <div>
+                    <span class="calc-res-lbl">Apontamentos</span>
+                    <span class="calc-res-val" id="calc-res-count">—</span>
+                  </div>
+                  <div>
+                    <span class="calc-res-lbl">Bruto</span>
+                    <span class="calc-res-val" id="calc-res-gross">—</span>
+                  </div>
+                  <div id="calc-res-lunch-wrap" style="display:none">
+                    <span class="calc-res-lbl">Almoço</span>
+                    <span class="calc-res-val lunch-deduct" id="calc-res-lunch">—</span>
+                  </div>
+                  <div>
+                    <span class="calc-res-lbl">Líquido</span>
+                    <span class="calc-res-val green" id="calc-res-mins">—</span>
+                  </div>
+                  <div>
+                    <span class="calc-res-lbl">Horas</span>
+                    <span class="calc-res-val" id="calc-res-hrs">—</span>
+                  </div>
+                </div>
+                <button type="button" class="btn-primary" onclick="applyCalcMins()" style="padding:6px 12px;font-size:12px;">Confirmar</button>
+              </div>
             </div>
           </div>
+
           <div class="field">
             <label>Taxa (R$ por Minuto) *</label>
             <input type="number" id="f-rate" step="0.0001" min="0" placeholder="Ex: 0.85" oninput="updateCalc()"/>
@@ -400,18 +468,18 @@
 
         <div class="form-row">
           <div class="field">
-            <label>Qtd. (opcional)</label>
+            <label>Quantidade <span style="font-weight:400;color:var(--muted);text-transform:none">(opcional)</span></label>
             <input type="text" id="f-qty" placeholder="Ex: 10 un"/>
           </div>
           <div class="field">
-            <label>Observações</label>
+            <label>Observações <span style="font-weight:400;color:var(--muted);text-transform:none">(opcional)</span></label>
             <input type="text" id="f-notes" placeholder="Detalhes da ficha"/>
           </div>
         </div>
 
         <div style="background:var(--bg); padding:12px; border-radius:var(--r); border:1px solid var(--border); margin-top:8px;">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:12px; color:var(--muted)">Cálculo Prévio</span>
+            <span style="font-size:12px; color:var(--muted); font-weight:500;">Cálculo Prévio</span>
             <span style="font-size:18px; font-weight:700; color:var(--accent)" id="cf-total">R$ 0,00</span>
           </div>
         </div>
@@ -478,7 +546,7 @@
           <label>Profissionais</label>
           <div id="rep-users-list" style="max-height:200px; overflow-y:auto; background:var(--bg); border:1px solid var(--border); border-radius:var(--r); padding:8px;"></div>
           <label style="margin-top:8px; display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
-            <input type="checkbox" id="rep-all-users" checked onchange="toggleAllRepUsers()">
+            <input type="checkbox" id="rep-all-users" checked onchange="toggleAllRepUsers()" style="accent-color:var(--accent);">
             <span style="font-size:12px; color:var(--text-dark);">Selecionar todos</span>
           </label>
         </div>
@@ -529,7 +597,7 @@ let deletingMUId      = null;
 let closingPeriodId   = null;
 let isPrimeiroCarregamento = true; 
 
-// --- CALCULADORA DE TEMPO ---
+// --- CALCULADORA DE APONTAMENTOS (RESTORED) ---
 let calcIntervals = [{id:1, start:'', end:''}];
 let calcNextId    = 2;
 const LUNCH_START = 12 * 60; // 12:00
@@ -582,7 +650,7 @@ function recalcIntervals(){
     const diff = e - s;
     if(diff <= 0){
       hasErr = true;
-      document.getElementById('calc-err').textContent = '⚠️ Horário final deve ser maior que o inicial';
+      document.getElementById('calc-err').textContent = '⚠️ O horário final deve ser maior que o inicial';
       continue;
     }
     grossTotal  += diff;
@@ -601,7 +669,7 @@ function recalcIntervals(){
 
     const lunchWrap = document.getElementById('calc-res-lunch-wrap');
     if(totalDeduct > 0){
-      lunchWrap.style.display = 'flex';
+      lunchWrap.style.display = 'block';
       document.getElementById('calc-res-lunch').textContent = '−' + totalDeduct + ' min';
     } else {
       lunchWrap.style.display = 'none';
@@ -752,8 +820,7 @@ async function loadManagedUsers(){
 async function loadAuthProfiles(){
   const { data } = await db.from('profiles').select('id,name,email,role').order('name');
   authProfiles = data || [];
-  renderAuthList(); 
-  populateAssignDropdown();
+  renderAuthList(); populateAssignDropdown();
 }
 
 // --- RENDENRIZAÇÃO DE INTERFACE E MODAIS ---
@@ -987,7 +1054,7 @@ function openReportModal() {
   let html = '';
   const addCheckbox = (id, name, isManaged) => {
     html += `<label style="display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer;">
-       <input type="checkbox" class="rep-u-cb" value="${isManaged ? 'managed:' : 'auth:'}${id}" checked>
+       <input type="checkbox" class="rep-u-cb" value="${isManaged ? 'managed:' : 'auth:'}${id}" checked style="accent-color:var(--accent);">
        <span style="font-size:13px;color:var(--text-dark);">${esc(name)} ${isManaged ? '<span style="color:var(--muted);font-size:11px">(Indicador)</span>' : ''}</span>
     </label>`;
   };
@@ -1104,7 +1171,7 @@ function generateReport() {
 }
 
 
-// --- OUTROS ---
+// --- INICIALIZAÇÃO DE MODAL E CALCULADORA ---
 function updateCalc(){
   const m = parseFloat(document.getElementById('f-minutes').value) || 0;
   const r = parseFloat(document.getElementById('f-rate').value) || 0;
@@ -1119,7 +1186,7 @@ function openAddModal(){
   pf.innerHTML = '<option value="">— Selecione —</option>' + allPeriods.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
   if(selectedPeriodId) pf.value = selectedPeriodId;
   
-  updateCalc(); updatePeriodWarning(); openModal('modal-form');
+  updateCalc(); updatePeriodWarning(); resetCalcPanel(); openModal('modal-form');
 }
 
 function openEditModal(id){
