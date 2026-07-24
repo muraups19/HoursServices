@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <title>ServiçoHoras</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -637,11 +637,11 @@
 <div id="toast-container"></div>
 
 <script>
-const https://taryfomwucrqonhlnncl.supabase.co  = 'https://taryfomwucrqonhlnncl.supabase.co';
+const SUPABASE_URL  = 'https://taryfomwucrqonhlnncl.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcnlmb213dWNycW9uaGxubmNsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4Mjk0MjAsImV4cCI6MjA5NTQwNTQyMH0.-wXeA53ZcBaMA8zqsAxA2JWvzoTn-lazyWdEkuLnXc0';
 
 const { createClient } = supabase;
-const db = createClient(https://taryfomwucrqonhlnncl.supabase.co, SUPABASE_ANON);
+const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // STATE
 let currentUser    = null;
